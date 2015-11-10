@@ -8,7 +8,7 @@ try:
 except Exception as e:
     print "exception %s (did you run install_packages.sh ?)"%str(e)
 
-url = "http://commondatastorage.googleapis.com/books/syntactic-ngrams/eng/unlex-verbargs.%02d-of-99.gz"
+url = "http://commondatastorage.googleapis.com/books/syntactic-ngrams/eng-1M/verbargs.%02d-of-99.gz"
 nums = xrange(0,99)
 
 def _dir():
