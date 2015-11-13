@@ -2,6 +2,9 @@ import gzip
 import argparse
 from os import listdir, path, makedirs
 
+object_tags = [ 'dobj' ]
+subject_tags = [ 'nsubj', 'nsubjpass', 'csubj', 'csubjpass' ]
+
 def preprocess(file_path, output_path):
     input_file = gzip.open(file_path, 'rb')
     output_file = gzip.open(output_path, 'wb')
@@ -10,24 +13,23 @@ def preprocess(file_path, output_path):
         v = items[0]
         s = ''
         o = ''
-        args = True
-        i = 1
-        while args == True:
-            e = items[i].split('/')
+        for item in items:
+            e = item.split('/')
             if len(e) == 4:
-                if e[2] == 'dobj':
+                if e[2] in object_tags:
                     o = e[0]
-                elif e[2] == 'nsubj' or e[2] == 'nsubjpass' or e[2] == 'csubj' or e[2] == 'csubjpass':
+                elif e[2] in subject_tags: 
                     s = e[0]
             else:
                 value = e[0]
-                args = False
-            i = i + 1
-        if s != '' and v != '' and o != '':
-            output_file.write(v + '\t'+ s + '\t'+ o + '\t'+ value + '\n')
+                break
+
+        if '' not in [s,v,o]:
+            output_file.write('\t'.join(v,s,o,value)+'\n')
+            output_file.flush()
     input_file.close()
     output_file.close() 
-    print file_path + ' done'   
+    print file_path,'done'   
     
 def main ():
     commandline_parser = argparse.ArgumentParser("Pre-processing of data")
