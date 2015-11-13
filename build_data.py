@@ -25,7 +25,7 @@ def preprocess(file_path, output_path):
                 break
 
         if '' not in [s,v,o]:
-            output_file.write('\t'.join(v,s,o,value)+'\n')
+            output_file.write('\t'.join([v,s,o,value])+'\n')
             output_file.flush()
     input_file.close()
     output_file.close() 
