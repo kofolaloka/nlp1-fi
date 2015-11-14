@@ -1,6 +1,7 @@
 import gzip
 import pandas as pd
 import os
+import operator
 
 class Triple(dict):
     
@@ -31,15 +32,32 @@ class Triple(dict):
     def __repr__(self):
         return 'Triple('+','.join(map(str,self.tolist()))+')'
 
+class TomeException(Exception):
+    pass
+
 class Tome(object):
     
-    def __init__(self, filename):
-        self.filename = filename
+    def __init__(self, a):
+        self.filename = self._df = None
+        if type(a) is str:
+            self.filename = a
+        elif type(a) is pd.DataFrame:
+            self._df = a
+        elif type(a) is list:
+            if all(map(lambda x: type(x) is pd.DataFrame, a)):
+                self._df = pd.concat(a)
+            elif all(map(lambda x: type(x) is Tome, a)):
+                dfs = map(operator.methodcaller('df'), a)
+                self._df = pd.concat(dfs)
+            else:
+                raise TomeException("cannot understand constructor argument (list)")
+        else:
+            raise TomeException("wrong constructor argument type")
     
     def _unbox_as_df(self):
         print "unboxing %s ..."%self.filename
         if not os.path.isfile(self.filename):
-            raise Exception("file %s does not exist"%self.filename)
+            raise TomeException("file %s does not exist"%self.filename)
         handle = gzip.open(self.filename, 'rb')
         df = pd.DataFrame.from_csv(
             handle,
@@ -50,15 +68,21 @@ class Tome(object):
         )
         return df
     
-    def _group(self, members_selected=None):
+    def df(self):
+        if self.filename is not None:
+            return self._unbox_as_df()
+        else:
+            assert type(self._df) is pd.DataFrame
+            return self._df
 
-        df = self._unbox_as_df()
+    def _group(self, members_selected=None):
+        df_ = self.df()
 
         if members_selected is None:
             members_selected = Triple.members()
         
         field_idx = Triple.members_idx(members_selected)
-        ret = df.groupby(field_idx)
+        ret = df_.groupby(field_idx)
         return ret
     
     def _group_sum_df(self,fields):
@@ -66,24 +90,31 @@ class Tome(object):
         ret = tmp.sum().reset_index()
         return ret
     
-    def _to_triples(self,df):
-        for i,row in df.iterrows():
+    def _to_triples(self,df_):
+        for i,row in df_.iterrows():
             yield Triple(*row)
+
+    def __iter__(self):
+        return self._to_triples(self.df())
 
     def group_sum(self, fields):
         tmp = self._group_sum_df(fields)
-        return self._to_triples(tmp)
+        return Tome(tmp)
 
     def sort(self, fields=None,ascending=False):
-        df = self._unbox_as_df()
+        df_ = self.df()
 
         if fields is None:
             fields = ['value']
 
         field_idx = Triple.members_idx(fields)
 
-        df_sort = df.sort(field_idx,ascending=ascending)
-        return self._to_triples(df_sort)
+        df_sort = df_.sort(field_idx,ascending=ascending)
+        return Tome(df_sort)
+
+    def first(self,amount):
+        df_ = self.df()
+        return Tome(df_[:amount])
 
     def writer(self):
         handle = gzip.open(self.filename, "wb")

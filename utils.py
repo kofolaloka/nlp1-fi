@@ -38,7 +38,9 @@ def argsdirs(title):
     return i,o,m
 
 def filenames(dirname):
-    return glob.glob(os.path.join(dirname,"*"))
+    ret = glob.glob(os.path.join(dirname,"*"))
+    ret.sort()
+    return ret
 
 def new_filename(dirname, prev):
     ret =  os.path.join(dirname,os.path.basename(prev))

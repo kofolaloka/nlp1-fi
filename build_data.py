@@ -4,6 +4,7 @@ from os import listdir, path, makedirs
 
 # local imports
 import triple
+import utils
 
 object_tags = [ 'dobj' ]
 subject_tags = [ 'nsubj', 'nsubjpass', 'csubj', 'csubjpass' ]
@@ -47,10 +48,9 @@ def main ():
     output_folder = path.join(output_folder,'dataset')
     if not path.exists(output_folder):
         makedirs(output_folder)
-    files = listdir(data_folder)
-    for f in files:
-        file_path = path.join(data_folder, f)
-        output_path = path.join(output_folder, f)
+    files = utils.filenames(data_folder)
+    for file_path in files:
+        output_path = utils.new_filename(output_folder, file_path)
         preprocess(file_path, output_path)
     
 if __name__ == '__main__':
