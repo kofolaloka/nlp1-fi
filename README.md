@@ -19,7 +19,18 @@ run this script:
    python2 build_data.py --data-folder raw/ --output-folder .
   ```
 
-## counting the triples: collapsing several partial counts contained in the pre-processed data
+## counting the triples
+collapse several partial counts with following command:
   ```
-  python2 count.py -d dataset/ -c counted/
+   python2 count.py -i ./dataset/ -o ./counted/
+  ```
+  
+## sorting the triples by count
+  ```
+   python sort.py -i ./counted/ -o ./sorted/
+  ```
+
+## most frequent across the entire dataset
+  ```
+  python most_frequent.py -i ./sorted/ -o ./most_frequent/
   ```
