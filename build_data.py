@@ -10,7 +10,8 @@ subject_tags = [ 'nsubj', 'nsubjpass', 'csubj', 'csubjpass' ]
 
 def preprocess(file_path, output_path):
     input_file = gzip.open(file_path, 'rb')
-    output_file = gzip.open(output_path, 'wb')
+    output_tome = triple.Tome(output_path)
+    writer = output_tome.writer()
 
     for line in input_file:
         items = line.strip().split()
@@ -29,9 +30,8 @@ def preprocess(file_path, output_path):
                 break
         if '' not in [v,s,o]:
             t = triple.Triple(v,s,o,value)
-            output_file.write(t.totabs()+'\n')
+            writer(t)
     input_file.close()
-    output_file.close() 
     print file_path,'done'   
     
 def main ():

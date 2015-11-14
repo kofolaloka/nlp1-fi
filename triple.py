@@ -14,6 +14,10 @@ class Triple(dict):
     @staticmethod
     def members():
         return ['v','s','o','value']
+    
+    @staticmethod
+    def members_idx(m):
+        return map(Triple.members().index,m)
 
     def totabs(self):
         return '\t'.join(map(str,self.tolist()))
@@ -33,7 +37,7 @@ class Tome(object):
         self.filename = filename
     
     def _unbox_as_df(self):
-
+        print "unboxing %s ..."%self.filename
         if not os.path.isfile(self.filename):
             raise Exception("file %s does not exist"%self.filename)
         handle = gzip.open(self.filename, 'rb')
@@ -46,14 +50,14 @@ class Tome(object):
         )
         return df
     
-    def _group(self, fields=None):
+    def _group(self, members_selected=None):
 
         df = self._unbox_as_df()
 
-        if fields is None:
-            fields = Triple.members()
+        if members_selected is None:
+            members_selected = Triple.members()
         
-        field_idx = map(Triple.members().index,fields)
+        field_idx = Triple.members_idx(members_selected)
         ret = df.groupby(field_idx)
         return ret
     
@@ -62,11 +66,25 @@ class Tome(object):
         ret = tmp.sum().reset_index()
         return ret
     
+    def _to_triples(self,df):
+        for i,row in df.iterrows():
+            yield Triple(*row)
+
     def group_sum(self, fields):
         tmp = self._group_sum_df(fields)
-        for i,row in tmp.iterrows():
-            yield Triple(*row)
-    
+        return self._to_triples(tmp)
+
+    def sort(self, fields=None,ascending=False):
+        df = self._unbox_as_df()
+
+        if fields is None:
+            fields = ['value']
+
+        field_idx = Triple.members_idx(fields)
+
+        df_sort = df.sort(field_idx,ascending=ascending)
+        return self._to_triples(df_sort)
+
     def writer(self):
         handle = gzip.open(self.filename, "wb")
 
