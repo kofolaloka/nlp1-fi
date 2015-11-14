@@ -14,7 +14,8 @@ run this script:
    python2 download_dataset.py destination_dir
   ```
   
-## pre-processing of the downloaded data (will create a `dataset/` directory)
+## pre-processing of the downloaded data 
+  This will create a `dataset/` directory and convert all verb forms to the infinitive by using WordNet's lemmatizer
   ```
    python2 build_data.py --data-folder raw/ --output-folder .
   ```
