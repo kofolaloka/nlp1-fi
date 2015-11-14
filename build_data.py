@@ -1,6 +1,8 @@
 import gzip
 import argparse
 from os import listdir, path, makedirs
+from nltk.stem.wordnet import WordNetLemmatizer
+import string
 
 # local imports
 import triple
@@ -8,6 +10,17 @@ import utils
 
 object_tags = [ 'dobj' ]
 subject_tags = [ 'nsubj', 'nsubjpass', 'csubj', 'csubjpass' ]
+lemmatizer = WordNetLemmatizer()
+
+def infinitive(verb):
+    try:
+        #verb = unicode(verb,"utf-8")
+        filtered = filter(lambda x: x in string.printable, verb)
+        ret = lemmatizer.lemmatize(filtered, 'v')
+    except Exception as e:
+        print "Exception: %s ; unable to lemmatize verb form %s"%(str(e),verb)
+        import ipdb; ipdb.set_trace()
+    return ret
 
 def preprocess(file_path, output_path):
     input_file = gzip.open(file_path, 'rb')
@@ -30,6 +43,7 @@ def preprocess(file_path, output_path):
                 value = e[0]
                 break
         if '' not in [v,s,o]:
+            v = infinitive(v)
             t = triple.Triple(v,s,o,value)
             writer(t)
     input_file.close()
