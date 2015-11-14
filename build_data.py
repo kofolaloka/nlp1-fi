@@ -2,18 +2,22 @@ import gzip
 import argparse
 from os import listdir, path, makedirs
 
+# local imports
+import triple
+
 object_tags = [ 'dobj' ]
 subject_tags = [ 'nsubj', 'nsubjpass', 'csubj', 'csubjpass' ]
 
 def preprocess(file_path, output_path):
     input_file = gzip.open(file_path, 'rb')
     output_file = gzip.open(output_path, 'wb')
+
     for line in input_file:
         items = line.strip().split()
         v = items[0]
         s = ''
         o = ''
-        for item in items:
+        for item in items[1:]:
             e = item.split('/')
             if len(e) == 4:
                 if e[2] in object_tags:
@@ -23,10 +27,9 @@ def preprocess(file_path, output_path):
             else:
                 value = e[0]
                 break
-
-        if '' not in [s,v,o]:
-            output_file.write('\t'.join([v,s,o,value])+'\n')
-            output_file.flush()
+        if '' not in [v,s,o]:
+            t = triple.Triple(v,s,o,value)
+            output_file.write(t.totabs()+'\n')
     input_file.close()
     output_file.close() 
     print file_path,'done'   
