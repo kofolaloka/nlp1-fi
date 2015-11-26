@@ -1,4 +1,4 @@
-INSTALL="pip install "
+INSTALL="pip2 install "
 
 $INSTALL nltk
 $INSTALL colored
