@@ -13,18 +13,18 @@ run the following script as either `root` or normal user to install the packages
 during running the scripts there will be probably a few exceptions launched that will tell 
 you which additional corpora need to be retrieved.
 
-Every time that this happens, you have to fix it by typing launching the python console:
+Every time that this happens, you have to fix it by launching the python console:
 
-    ```
-    python2
-    ```
+  ```
+   python2
+  ```
 
 and typing the following:
 
-    ```
-    import nltk
-    nltk.download()
-    ```
+  ```
+   import nltk
+   nltk.download()
+  ```
 
 This will launch the GUI for downloading the corpora.
 
