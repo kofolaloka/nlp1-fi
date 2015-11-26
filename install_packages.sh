@@ -5,4 +5,5 @@ $INSTALL colored
 $INSTALL numpy
 $INSTALL urllib
 $INSTALL pandas
+$INSTALL ipdb
 
