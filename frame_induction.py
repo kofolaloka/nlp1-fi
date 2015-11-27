@@ -24,13 +24,17 @@ def main():
 	data = readData(args['input'])
 	N = len(data)
 
-	global vocabulary
+	global voc
 	global V
-	vocabulary = extractVocabulary(data)
-	V = len(vocabulary)
-	if args['model'] == '0-Rooth':
-		emTraining()
+	voc = extractVocabulary(data)
+	V = len(voc)
+	data = extendData()
 
+	assigns = []
+	if args['model'] == '0-Rooth':
+		assigns = emTraining()
+	if args['model'] == '0-OConnor':
+		assigns = lda()
 
 def readData(dataFile):
 	print 'Reading data...'
@@ -50,11 +54,15 @@ def extractVocabulary(data):
 	return list(set(vocabulary))
 
 
+def extendData():
+	return [data[i]+[[voc.index(data[i][0][a]) for a in xrange(3)]] for i in xrange(N)]
+
+
 def estimatePosterior(phi, theta):
 	pTable = [np.zeros(frames) for w in xrange(V)]
 	for i in xrange(N):
 		for a in xrange(3):
-			w = vocabulary.index(data[i][0][a])
+			w = data[i][2][a]
 			for f in xrange(frames):
 				pTable[w][f] = theta[f]*phi[f][a][w]
 	# normalize
@@ -70,7 +78,7 @@ def maximizePhi(pTable):
 		for a in xrange(3):
 			for w in xrange(V):
 				for i in xrange(N):
-					if data[i][0][a] == vocabulary[w]:
+					if data[i][2][a] == w:	
 						phi[f][a][w] += data[i][1]*pTable[w][f]
 			# normalize
 			num = sum(phi[f][a])
@@ -81,8 +89,8 @@ def maximizePhi(pTable):
 def maximizeTheta(pTable):
 	theta = np.zeros(frames)
 	for f in xrange(frames):
-		theta[f] = sum(data[i][1]*sum(pTable[vocabulary.index(w)][f] for w in data[i][0]) for i in xrange(N))
-		# normalize
+		theta[f] = sum(data[i][1]*sum(pTable[w][f] for w in data[i][2]) for i in xrange(N))
+	# normalize
 	num = sum(theta)
 	theta = [theta[f]/num for f in xrange(frames)]
 	return theta
@@ -93,14 +101,27 @@ def emLikelihood(pTable, phi, theta):
 	for i in xrange(N):
 		count = data[i][1]
 		for a in xrange(3):
+			w = data[i][2][a]
 			for f in xrange(frames):
-				w = vocabulary.index(data[i][0][a])
 				ll += count*pTable[w][f]*math.log(theta[f]*phi[f][a][w])
 	return ll
 
+def chooseAssignmentsEM(phi):
+	print 'Choosing assignments...'
+	assigns = np.zeros(N)
+	for i in xrange(N):
+		argmaxF = [0, None]
+		for f in xrange(frames):
+			pf = np.prod(phi[f][a][data[i][2][a]] for a in xrange(3))
+			if pf > argmaxF[0]:
+				argmaxF = [pf, f]
+		assigns[i] = argmaxF[1]
+	print 'Completed choosing assignments...'
+	return assigns
+
 
 def emTraining(iterations=10):
-	print 'Beginning EM training...'
+	print 'Starting EM training...'
 	globalStart = time.time()
 
 	print 'Initializing...'
@@ -121,12 +142,29 @@ def emTraining(iterations=10):
 		print '\t\tLog Likehood:', str(emLikelihood(pTable, phi, theta))
 	print 'EM training completed in', getDuration(globalStart, time.time())
 
+	return chooseAssignmentsEM(phi)
 
-def lda(prior=False):
-	print 'Beginning LDA...'
+
+def lda(beta=0.1, prior=False, interations=10):
+	print 'Starting LDA...'
 	globalStart = time.time()
+
+	# 1. initialize randomly
+	assigns = [[np.random.randint(frames) for a in xrange(3)] for i in xrange(N)]
+	
+	# 3. repeat long enough
+	for i in xrange(1, (iterations+1)):
+		print '\tIteration', str(i)
+		# 2. randomly choose a variable and draw it's new value from 
+		# the respective conditional probability 
+
+		print '\t\tIteration completed in', getDuration(start, time.time())
+	
+	
 	print 'LDA completed in', getDuration(globalStart, time.time())
 
+	# 4. choose the last assignment as a sample
+	return assigns
 
 def getDuration(start, stop):
     return str(datetime.timedelta(seconds=(stop-start)))
