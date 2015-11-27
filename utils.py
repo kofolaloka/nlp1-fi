@@ -4,16 +4,23 @@ import os.path
 import sys
 import glob
 
-def argsdirs(title):
+def argsdirs(title,other=None):
     ap = argparse.ArgumentParser(title)
     ap.add_argument("-i", nargs=1, help="directory containing input data")
     ap.add_argument("-o", nargs=1, help="directory containing output data")
     ap.add_argument("-m", nargs=1, help="subset of v,s,o ; comma separated")
+    for ot in list(other):
+        ap.add_argument("-"+str(ot), nargs=1, help="other argument")
     args = ap.parse_args()
+
+    other_val = ()
     try:
         i = args.i[0]
         o = args.o[0]
-    except:
+        for ot in list(other):
+            other_val += getattr(args,ot)[0],
+    except Exception as e:
+        print e
         ap.print_help()
         sys.exit(-1)
 
@@ -35,7 +42,7 @@ def argsdirs(title):
         if not os.path.exists(curr):
             raise Exception("directory %s does not exist"%curr)
 
-    return i,o,m
+    return (i,o,m) + other_val
 
 def filenames(dirname):
     ret = glob.glob(os.path.join(dirname,"*"))

@@ -8,8 +8,8 @@ import triple
 import utils
 
 def main():
-    in_d, out_d,m = utils.argsdirs("Most frequent triples")
-    n = 1000
+    in_d, out_d,m,n = utils.argsdirs("Most frequent triples",["n"])
+    n = int(n)
     tomes = [
         triple.Tome(filename)
         for filename
