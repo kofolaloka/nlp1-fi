@@ -54,5 +54,5 @@ collapse several partial counts with following command:
 
 ## most frequent across the entire dataset
   ```
-  python most_frequent.py -i ./sorted/ -o ./most_frequent/
+  python most_frequent.py -i ./sorted/ -o ./most_frequent/ -n 4000
   ```
