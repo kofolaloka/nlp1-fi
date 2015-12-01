@@ -1,0 +1,7 @@
+beckon
+gesticulate
+gesture
+motion
+nod
+signal
+wave

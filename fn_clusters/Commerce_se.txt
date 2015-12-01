@@ -1,0 +1,4 @@
+retail
+sell
+end
+auction

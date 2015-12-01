@@ -1,0 +1,4 @@
+allow
+sanction
+permit
+entitle

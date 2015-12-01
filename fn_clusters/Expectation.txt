@@ -1,0 +1,6 @@
+anticipate
+await
+expect
+foresee
+predict
+wait

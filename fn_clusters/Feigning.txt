@@ -1,0 +1,7 @@
+counterfeit
+fake
+feign
+stage
+affect
+pretend
+simulate

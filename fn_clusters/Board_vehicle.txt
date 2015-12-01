@@ -1,0 +1,8 @@
+board
+get
+embark
+emplane
+entrain
+mount
+hop
+embus

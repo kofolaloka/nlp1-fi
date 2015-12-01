@@ -1,0 +1,9 @@
+nap
+doze
+snooze
+catnap
+slumber
+hibernate
+kip
+drowse
+sleep

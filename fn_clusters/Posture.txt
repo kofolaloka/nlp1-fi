@@ -1,0 +1,15 @@
+bend
+crouch
+hunch
+huddle
+kneel
+lean
+lie
+sit
+slouch
+sprawl
+squat
+stand
+stoop
+cower
+shrink

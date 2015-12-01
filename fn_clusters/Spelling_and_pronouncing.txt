@@ -1,0 +1,6 @@
+spell
+misspell
+pronounce
+mispronounce
+say
+write

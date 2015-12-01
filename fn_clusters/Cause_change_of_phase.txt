@@ -1,0 +1,10 @@
+freeze
+thaw
+melt
+defrost
+evaporate
+liquefy
+solidify
+flux
+unfreeze
+boil

@@ -1,0 +1,13 @@
+permit
+allow
+let
+suffer
+sanction
+okay
+greenlight
+approve
+restrict
+clear
+authorize
+accept
+license

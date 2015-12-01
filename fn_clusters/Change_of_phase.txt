@@ -1,0 +1,11 @@
+freeze
+liquefy
+aporize
+evaporate
+solidify
+thaw
+sublime
+condense
+melt
+defrost
+unfreeze

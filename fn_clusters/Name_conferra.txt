@@ -1,0 +1,8 @@
+nickname
+dub
+christen
+name
+baptize
+rename
+entitle
+call

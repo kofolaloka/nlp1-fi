@@ -1,0 +1,19 @@
+bathe
+wash
+lave
+shower
+pluck
+floss
+shave
+wax
+comb
+shampoo
+manicure
+moisturize
+soap
+cleanse
+groom
+brush [teeth]
+brush [hair]
+plait
+file

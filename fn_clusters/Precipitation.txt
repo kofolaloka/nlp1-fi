@@ -1,0 +1,7 @@
+rain
+snow
+drizzle
+sleet
+hail
+sprinkle
+shower

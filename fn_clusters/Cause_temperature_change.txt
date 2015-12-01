@@ -1,0 +1,10 @@
+heat
+warm
+cool
+refrigerate
+heat up
+cool down
+warm up
+reheat
+chill
+overheat

@@ -1,0 +1,6 @@
+bind
+obligate
+commit
+pledge
+require
+charge

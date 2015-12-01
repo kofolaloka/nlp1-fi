@@ -1,0 +1,8 @@
+tell
+inform
+advise
+apprise
+assure
+confide
+notify
+brief

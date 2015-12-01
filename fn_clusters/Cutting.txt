@@ -1,0 +1,9 @@
+slice
+dice
+mince
+cube
+chop
+fillet
+pare
+cut
+carve

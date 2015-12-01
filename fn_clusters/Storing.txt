@@ -1,0 +1,6 @@
+store
+warehouse
+cache
+keep
+cellar
+stock

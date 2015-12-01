@@ -1,0 +1,11 @@
+cable
+wire
+phone
+semaphore
+telegraph
+telex
+radio
+telephone
+fax
+call
+pdf

@@ -1,0 +1,5 @@
+earn
+make
+net
+lose
+pull

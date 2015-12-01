@@ -1,0 +1,11 @@
+flake
+pulverize
+grind
+crumble
+crush
+mill
+grate
+shred
+crunch
+masticate
+chew

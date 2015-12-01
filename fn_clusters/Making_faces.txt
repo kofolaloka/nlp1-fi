@@ -1,0 +1,7 @@
+frown
+grimace
+grin
+pout
+scowl
+smile
+smirk

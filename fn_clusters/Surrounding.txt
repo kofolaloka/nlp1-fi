@@ -1,0 +1,5 @@
+surround
+straddle
+ring
+rim
+edge

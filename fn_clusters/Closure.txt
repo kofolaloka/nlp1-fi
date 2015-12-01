@@ -1,0 +1,15 @@
+button
+open
+close
+buckle
+cap
+zip
+lace
+unzip
+unbuckle
+uncork
+unscrew
+seal
+fasten
+unfasten
+tie

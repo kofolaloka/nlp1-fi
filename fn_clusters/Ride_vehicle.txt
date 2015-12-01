@@ -1,0 +1,10 @@
+ride
+sail
+fly
+taxi
+take
+cruise
+coast
+jet
+hitchhike
+bus

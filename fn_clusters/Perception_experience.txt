@@ -1,0 +1,11 @@
+detect
+feel
+hear
+perceive
+see
+sense
+smell
+taste
+overhear
+witness
+experience

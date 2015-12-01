@@ -1,0 +1,4 @@
+barricade
+blockade
+cordon off
+block off

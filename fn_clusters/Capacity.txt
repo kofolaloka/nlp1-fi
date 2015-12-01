@@ -1,0 +1,6 @@
+seat
+fit
+take
+sleep
+feed
+serve

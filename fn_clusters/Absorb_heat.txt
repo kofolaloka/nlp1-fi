@@ -1,0 +1,25 @@
+sizzle
+fry
+bake
+simmer
+cook
+stew
+boil
+scorch
+sear
+singe
+barbecue
+blanch
+braise
+broil
+brown
+char
+coddle
+deep fry
+grill
+parboil
+poach
+roast
+saute
+steam
+toast

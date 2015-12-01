@@ -1,0 +1,14 @@
+send
+mail
+ship
+post
+export
+forward
+route
+dispatch
+fax
+telex
+express
+barge
+wire
+refer

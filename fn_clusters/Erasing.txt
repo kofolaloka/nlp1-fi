@@ -1,0 +1,5 @@
+strike
+delete
+erase
+expunge
+kill

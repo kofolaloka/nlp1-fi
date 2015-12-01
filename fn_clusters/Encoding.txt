@@ -1,0 +1,9 @@
+couch
+formulate
+frame
+phrase
+put
+word
+misword
+express
+cast

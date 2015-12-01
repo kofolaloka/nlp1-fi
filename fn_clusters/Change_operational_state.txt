@@ -1,0 +1,9 @@
+activate
+turn on
+turn off
+boot
+shut off
+deactivate
+cut
+cut off
+kill

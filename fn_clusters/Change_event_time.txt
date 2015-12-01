@@ -1,0 +1,11 @@
+delay
+postpone
+defer
+advance
+move up
+move back
+put off
+hold over
+put over
+hold up
+reschedule

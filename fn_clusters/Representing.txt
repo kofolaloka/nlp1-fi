@@ -1,0 +1,2 @@
+symbolize
+be symbol

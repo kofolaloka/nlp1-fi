@@ -1,0 +1,7 @@
+stop
+halt
+discontinue
+cease
+terminate
+abandon
+quit

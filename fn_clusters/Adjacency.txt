@@ -1,0 +1,4 @@
+border
+neighbor
+adjoin
+abut

@@ -1,0 +1,10 @@
+make
+turn
+change
+convert
+transform
+modify
+alter
+ary
+reshape
+shift

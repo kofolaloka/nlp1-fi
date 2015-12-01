@@ -1,0 +1,5 @@
+lose
+tie
+show
+win
+fold

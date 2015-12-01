@@ -1,0 +1,12 @@
+traverse
+skirt
+mount
+descend
+cross
+crisscross
+ascend
+jump
+pass
+circle
+hop
+leap

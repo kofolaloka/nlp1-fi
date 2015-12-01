@@ -1,0 +1,3 @@
+decay
+fuse
+fission

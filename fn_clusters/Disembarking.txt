@@ -1,0 +1,8 @@
+disembark
+debark
+deplane
+detrain
+dismount
+alight
+debus
+get

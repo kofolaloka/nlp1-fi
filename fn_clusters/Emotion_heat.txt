@@ -1,0 +1,8 @@
+boil
+burn
+chafe
+fume
+seethe
+simmer
+smoulder
+stew

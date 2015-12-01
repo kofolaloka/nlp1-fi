@@ -1,0 +1,7 @@
+quit
+resign
+retire
+stand down
+give notice
+step down
+leave

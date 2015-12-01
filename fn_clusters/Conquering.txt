@@ -1,0 +1,5 @@
+conquer
+capture
+fall
+take
+reduce

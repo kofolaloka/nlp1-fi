@@ -1,0 +1,14 @@
+portend
+foretoken
+betoken
+presage
+forebode
+augur
+bode
+foreshadow
+foretell
+prefigure
+promise
+herald
+announce
+threaten

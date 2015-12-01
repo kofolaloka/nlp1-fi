@@ -1,0 +1,10 @@
+bisect
+divide
+part
+partition
+section
+segment
+segregate
+separate
+split
+sever
