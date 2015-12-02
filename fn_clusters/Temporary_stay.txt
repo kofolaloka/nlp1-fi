@@ -3,7 +3,5 @@ lodge
 room
 guest
 overnight
-sleep over
-stay over
 board
 quarter

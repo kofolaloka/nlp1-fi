@@ -2,6 +2,4 @@ ent
 air
 express
 oice
-give voice
 articulate
-put into words

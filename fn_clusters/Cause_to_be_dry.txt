@@ -1,8 +1,5 @@
 desiccate
 dry
 dehumidify
-dry out
-dry off
-dry up
 dehydrate
 anhydrate

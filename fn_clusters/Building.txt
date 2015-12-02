@@ -2,11 +2,8 @@ assemble
 glue
 build
 weld
-put together
 construct
 make
-fit together
-piece together
 erect
 raise
 fashion

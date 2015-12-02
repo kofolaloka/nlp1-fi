@@ -1,25 +1,15 @@
 bend
 stoop
 stand
-stand up
 kneel
-kneel down
-lie down
 lie
 sit
-sit down
-sit up
 squat
-squat down
 lean
 sprawl
-sprawl out
 crouch
-crouch down
 huddle
 hunch
 slouch
-kneel up
-hunch up
 rise
 drop

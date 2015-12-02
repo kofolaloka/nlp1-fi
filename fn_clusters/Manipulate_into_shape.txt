@@ -4,4 +4,3 @@ coil
 twist
 curl
 mold
-roll (into)

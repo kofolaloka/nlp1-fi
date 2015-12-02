@@ -3,5 +3,4 @@ bind
 fasten
 moor
 attach
-take hold
 stick

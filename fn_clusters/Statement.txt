@@ -51,4 +51,3 @@ describe
 detail
 tell
 allow
-be like

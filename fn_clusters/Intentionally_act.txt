@@ -1,7 +1,6 @@
 do
 act
 perform
-carry out
 conduct
 execute
 engage

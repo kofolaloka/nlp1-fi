@@ -1,6 +1,5 @@
 replace
 substitute
-swap out
 exchange
 change
 switch

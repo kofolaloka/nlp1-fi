@@ -4,4 +4,3 @@ heat
 refrigerate
 reheat
 warm
-cool off

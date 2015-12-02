@@ -110,7 +110,6 @@ make
 stalk
 enture
 storm
-make a beeline
 walk
 drive
 sail
@@ -125,7 +124,6 @@ edge
 rove
 advance
 file
-take to the air
 rip
 slouch
 slip

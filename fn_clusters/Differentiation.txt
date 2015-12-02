@@ -2,7 +2,5 @@ differentiate
 discriminate
 distinguish
 sort
-tell apart
 separate
 know
-tell from

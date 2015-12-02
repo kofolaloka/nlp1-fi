@@ -6,7 +6,6 @@ revolt
 oust
 depose
 dethrone
-take over
 topple
 throne
 enthrone

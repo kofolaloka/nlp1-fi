@@ -21,5 +21,4 @@ illustrate
 point
 support
 tell
-rule out
 assure

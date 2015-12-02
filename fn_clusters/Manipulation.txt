@@ -22,7 +22,6 @@ yank
 fumble
 grope
 rub
-grab hold
 lick
 touch
 kiss

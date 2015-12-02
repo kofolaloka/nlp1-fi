@@ -8,8 +8,6 @@ diminish
 cut
 move
 curtail
-knock down
-step up
 push
 promote
 enhance

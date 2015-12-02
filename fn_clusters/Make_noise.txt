@@ -96,7 +96,6 @@ sploosh
 scream
 ring
 beep
-hem and haw
 boom
 cry
 sound

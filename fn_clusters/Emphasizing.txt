@@ -1,6 +1,5 @@
 emphasize
 prioritize
-place weight
 focus
 stress
 accentuate

@@ -49,7 +49,6 @@ knee
 wound
 pummel
 electrocute
-beat up
 torture
 maim
 flog

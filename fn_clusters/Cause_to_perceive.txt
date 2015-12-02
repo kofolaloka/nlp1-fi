@@ -6,4 +6,3 @@ depict
 represent
 exhibit
 present[medical]
-bring to attention

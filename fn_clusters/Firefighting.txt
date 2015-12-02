@@ -1,5 +1,4 @@
 fight
-gain ground
 control
 tackle
 attack

@@ -1,12 +1,6 @@
 start
 begin
-take up
 enter
-swing (into)
 initiate
 commence
-launch (into)
-strike up
 open
-set about
-get started

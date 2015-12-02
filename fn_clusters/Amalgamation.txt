@@ -8,8 +8,6 @@ meld
 merge
 unify
 unite
-band together
-come together
 coalesce
 consolidate
 join

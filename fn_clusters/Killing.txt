@@ -25,5 +25,3 @@ butcher
 garrotte
 silence
 destroy
-take out
-do in

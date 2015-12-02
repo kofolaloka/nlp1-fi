@@ -1,15 +1,10 @@
 reach
 contact
-write in
 write
 e-mail
 call
-call up
 phone
-phone in
 ring
-ring up
-get in touch
 telephone
 mail
 telex
@@ -18,5 +13,3 @@ cable
 page
 radio
 telegraph
-call in
-get through

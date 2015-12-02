@@ -41,7 +41,6 @@ strap
 adhere
 append
 concatenate
-tack on
 yoke
 truss
 link

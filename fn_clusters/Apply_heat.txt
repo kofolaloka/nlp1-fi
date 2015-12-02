@@ -21,7 +21,6 @@ simmer
 cook
 bake
 barbecue
-deep fry
 singe
 sear
 plank
