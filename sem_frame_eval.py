@@ -10,14 +10,14 @@ def main():
     commandline_parser.add_argument("--output-folder", nargs=1, help="Specifies the path to the directory where the ouput evaluation files are stored.")
 
     args = vars(commandline_parser.parse_args())
-    clusters_dir = args["corpus_directory"][0]
-    fn_dir = args["test_set_directory"][0]
-    output_folder = args["threshold"][0]
+    clusters_dir = args["clusters"][0]
+    fn_dir = args["framenet"][0]
+    output_folder = args["output_folder"][0]
     filter_clusters(clusters_dir)
     max_match(clusters_dir, fn_dir, output_folder)
     vocab_clusters = vocab(clusters_dir)
     vocab_fn = vocab(fn_dir)
-    print 'Coverage: '+ coverage(vocab_clusters, vocab_fn)
+    print 'Coverage: '+ str(coverage(vocab_clusters, vocab_fn))
 
 def vocab(folder):
     vocab = set()
@@ -25,29 +25,32 @@ def vocab(folder):
         file_path = path.join(folder, file)
         file = open(file_path, 'r')
         for line in file:
-            vocab.add(line)
+            verb = line.strip('\n')
+            vocab.add(verb)
     return vocab
 
 def coverage(vocab_clusters, vocab_fn):
-    ratio = len(vocab_clusters, vocab_fn)
+    ratio = len(vocab_clusters)/ len(vocab_fn)
     return ratio
 
 def dice_similarity(set1, set2):
-    sim = (2 * len(set1.intersection(set2)))/(len(set1) + len(set2))
+    intersection = set1.intersection(set2)
+    total = len(set1) + len(set2)
+    sim = float(2 * len(intersection))/float(total)
     return sim
 
 def filter_clusters(clusters_dir):
     for frame in listdir(clusters_dir):
         frame_id = frame
         frame_path = path.join(clusters_dir, frame)
-        frame = frame.open(frame_path, 'r')
+        frame = open(frame_path, 'r')
         i = 0
         for line in frame:
             i += 1
         if i < 5:
             remove(frame_path)
         else:
-            frame_path.close()
+            frame.close()
 
 def max_match(clusters_dir, fn_dir, output_folder):
     '''
@@ -67,19 +70,25 @@ def max_match(clusters_dir, fn_dir, output_folder):
         frame = open(frame_path, 'r')
         wordset = set()
         for line in frame:
-            wordset.add(line)
+	    verb = line.strip('\n')
+            wordset.add(verb)
         sims = {}
         for fn_frame in fn_frames:
-            frame_fn_id = fn_frame
+            frame_fn_id = fn_frame.strip('.txt')
             frame_fn_path = path.join(fn_dir, fn_frame)
             frame_fn = open(frame_fn_path, 'r')
             wordset_fn = set()
-            for line in fn_frame:
-                wordset_fn.add(line)
+            for line in frame_fn:
+		verb = line.strip('\n')
+                wordset_fn.add(verb)
             sim = dice_similarity(wordset, wordset_fn)
             sims[frame_fn_id] = sim
-        max_match_frame = max(sims).key
-        output_file.write(frame_id + '\t' + max_match_frame + '\t' + sim[max_match_frame])
+	    frame_fn.close()
+	inverse = [(value, key) for key, value in sims.items()]
+	max_match_frame = max(inverse)[1]
+        max_match_frame_value = max(inverse)[0]
+        output_file.write(frame_id + '\t' +  max_match_frame+ '\t' + str(max_match_frame_value)+ '\n')
+	frame.close()
 
 if __name__ == '__main__':
     main()
