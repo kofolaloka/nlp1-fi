@@ -2,7 +2,7 @@ import utils
 import triple
 import numpy as np
 A=3 # number of args (v,s,o)
-F=5
+F=20
 
 def initialize_theta():
     return np.ones(F)/F # uniform distribution

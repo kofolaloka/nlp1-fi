@@ -9,7 +9,7 @@ def argsdirs(title,other=None):
     ap.add_argument("-i", nargs=1, help="directory containing input data")
     ap.add_argument("-o", nargs=1, help="directory containing output data")
     ap.add_argument("-m", nargs=1, help="subset of v,s,o ; comma separated")
-    for ot in list(other):
+    for ot in other or []:
         ap.add_argument("-"+str(ot), nargs=1, help="other argument")
     args = ap.parse_args()
 
@@ -17,7 +17,7 @@ def argsdirs(title,other=None):
     try:
         i = args.i[0]
         o = args.o[0]
-        for ot in list(other):
+        for ot in other or []:
             other_val += getattr(args,ot)[0],
     except Exception as e:
         print e
@@ -37,7 +37,7 @@ def argsdirs(title,other=None):
         m = args.m[0].split(',')
     except:
         m = ['v','s','o']
-    
+
     for curr in [i,o]:
         if not os.path.exists(curr):
             raise Exception("directory %s does not exist"%curr)
