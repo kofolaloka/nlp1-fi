@@ -12,6 +12,4 @@ reprimand
 reproach
 harangue
 reprove
-take to task
-tell off
 congratulate

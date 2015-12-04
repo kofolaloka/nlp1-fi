@@ -4,9 +4,6 @@ croak
 decease
 starve
 expire
-pass away
-kick the bucket
 drown
-croak it
 asphyxiate
 suffocate

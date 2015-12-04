@@ -5,7 +5,6 @@ hunger
 thirst
 long
 aspire
-wish (that)
 hanker
 crave
 yearn
@@ -14,7 +13,6 @@ covet
 will
 wish
 yen
-feel like
 fancy
 pine
 ache

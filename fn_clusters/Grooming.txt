@@ -13,7 +13,5 @@ moisturize
 soap
 cleanse
 groom
-brush [teeth]
-brush [hair]
 plait
 file

@@ -1,9 +1,6 @@
 attack
 assault
-fall (upon)
 charge
-lay (into)
-set (upon)
 storm
 strike
 ambush

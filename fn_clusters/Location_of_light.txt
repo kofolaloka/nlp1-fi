@@ -15,5 +15,4 @@ flame
 scintillate
 flare
 glister
-light up
 illuminate

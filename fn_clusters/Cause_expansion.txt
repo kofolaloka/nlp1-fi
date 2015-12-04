@@ -9,5 +9,4 @@ swell
 widen
 narrow
 grow
-blow up
 stretch

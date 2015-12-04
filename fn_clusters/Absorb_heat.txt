@@ -15,7 +15,6 @@ broil
 brown
 char
 coddle
-deep fry
 grill
 parboil
 poach

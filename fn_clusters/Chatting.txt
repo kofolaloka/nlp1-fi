@@ -5,5 +5,4 @@ talk
 joke
 gossip
 gab
-shoot the breeze
 yak

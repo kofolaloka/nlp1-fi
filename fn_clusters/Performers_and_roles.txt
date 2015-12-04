@@ -2,8 +2,6 @@ star
 act
 play
 be
-co-star (in)
-star (in)
 co-star
 feature
 appear

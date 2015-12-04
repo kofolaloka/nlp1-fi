@@ -1,7 +1,5 @@
 succeed
 fail
-pull off
 manage
 miss
 ace
-get there

@@ -3,24 +3,12 @@ author
 write
 compose
 draft
-jot down
 jot
 speak
 say
 utter
-write up
-write down
-write in
-write out
 print
 type
-type out
-type up
-type in
-print out
-print up
-get down
 chronicle
 sign
-dash off
 list

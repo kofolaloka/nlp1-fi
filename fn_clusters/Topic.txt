@@ -3,6 +3,5 @@ discuss
 cover
 treat
 address
-dwell (on)
 regard
 refer

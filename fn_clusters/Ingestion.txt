@@ -26,6 +26,4 @@ have
 imbibe
 quaff
 swill
-put away
-put back
 tuck

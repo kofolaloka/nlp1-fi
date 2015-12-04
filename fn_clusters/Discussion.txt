@@ -4,5 +4,3 @@ debate
 discuss
 parley
 negotiate
-talk (to)
-talk over

@@ -3,7 +3,6 @@ provide
 provision
 equip
 outfit
-fix up
 fuel
 issue
 furnish

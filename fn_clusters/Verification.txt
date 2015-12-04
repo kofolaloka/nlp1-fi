@@ -2,5 +2,4 @@ confirm
 erify
 identify
 substantiate
-make sure
 certify
