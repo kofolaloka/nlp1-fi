@@ -9,7 +9,7 @@ class Triple(dict):
 
     def __init__(self,*args):
         super(Triple,self).__init__()
-        assert len(args) == len(Triple.members())
+        assert len(args) == len(Triple.members()),"Cannot create Triple: given len(args) is %d while len(Triple.members()) is %d"%(len(args),len(Triple.members()))
 
         for h,a in zip(Triple.members(),args):
             self[h] = a
@@ -151,15 +151,20 @@ class TomeVoc(object):
         self.tomes = tomes
 
     @property
+    def triples(self):
+        for tome in self.tomes:
+            for triple in tome:
+                yield triple
+
+    @property
     def vocabulary(self):
         if hasattr(self,'_vocabulary'):
             # lazy evaluation for the win!
             return self._vocabulary
 
         s = set()
-        for tome in self.tomes:
-            for triple in tome:
-                s.update(triple.tolist()[:3])
+        for triple in self.triples:
+            s.update(triple.tolist()[:3])
         tmp = list(s)
         self._vocabulary = sorted(tmp)
         return self._vocabulary
@@ -197,14 +202,13 @@ class TomeVoc(object):
 
         self._indexes = []
         voc = self.vocabulary
-        for tome in self.tomes:
-            for triple in tome:
-                triple_indexes = [
-                    voc.index(word)
-                    for word
-                    in triple.tolist()[:3]
-                ]
-                self._indexes.append(triple_indexes)
+        for triple in self.triples:
+            triple_indexes = [
+                voc.index(word)
+                for word
+                in triple.tolist()[:3]
+            ]
+            self._indexes.append(triple_indexes)
         return self._indexes
 
     @property

@@ -2,8 +2,8 @@ import utils
 import triple
 import numpy as np
 A=3 # number of args (v,s,o)
-F=20
-
+F=200
+num_epochs=2000
 def initialize_theta():
     return np.ones(F)/F # uniform distribution
 
@@ -52,7 +52,7 @@ def m_step(D, word_indexes, counts, mus):
 def loglikelihood(word_indexes, mus, theta, phi):
     term1 = np.sum(np.dot(np.log(theta),mus))
 
-    phi_selected = phi[:,range(A),word_indexes] # shape (F,#triples,A)
+    phi_selected = np.log(phi[:,range(A),word_indexes]+0.0000000000000000001) # shape (F,#triples,A)
     phi_sum = np.sum(phi_selected, axis=2)
     term2 = np.sum(phi_sum*mus)
     return term1 + term2
@@ -64,15 +64,14 @@ def em(tv):
     D = len(tv.vocabulary)
     theta = initialize_theta()
     phi = initialize_phi(D)
-    for epoch in range(10000):
+    for epoch in range(num_epochs):
         print "epoch",epoch
         mus = e_step(tv.indexes, theta, phi)
         counts = tv.counts
         theta, phi = m_step(D, tv.indexes, counts, mus)
-        print "theta",theta
+        #print "theta",theta
         print "loglikelihood",loglikelihood(tv.indexes, mus,theta,phi)
-    print "mus",mus
-    print "phi",phi
+    return mus
 
 def prepare_tomes(in_d):
 
@@ -88,10 +87,21 @@ def prepare_tomes(in_d):
     word_indexes = tv.indexes
     return tv
 
+def write_results(tv, mus, out_d):
+    frames = np.argmax(mus,axis=0)
+    filename_out = utils.new_filename(out_d, "framed_triples.gz")
+    tome_out = triple.Tome(filename_out)
+    writer = tome_out.writer()
+    for tr,frame in zip(tv.triples,frames):
+        tr_new = triple.Triple(*(tr.tolist()[:3]+[frame]))
+        writer(tr_new)
+
 def main():
     in_d, out_d,m  = utils.argsdirs("Expectation Maximization (Model 0)")
     tv = prepare_tomes(in_d)
-    em(tv)
+    mus = em(tv)
+    write_results(tv, mus, out_d)
+    import ipdb; ipdb.set_trace()
 
 if __name__=="__main__":
     main()
