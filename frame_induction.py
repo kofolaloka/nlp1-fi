@@ -15,7 +15,7 @@ def main():
 	parser.add_argument('-m','--model', type=str, help='Model used for training', choices=['0-Rooth', '0-OConnor', '1-OConnor'], default='0-Rooth', required=False)
 	parser.add_argument('-f','--frames', type=int, help='Number of frames to look for', default=10, required=False)
 	parser.add_argument('-t','--threads', type=int, help='Number of threads', default=1, required=False)
-	parser.add_argument('-o','--output', type=bool, help='Output', default='', required=False)
+	parser.add_argument('-o','--output', type=str, help='Output', default='', required=False)
 	parser.add_argument('-it','--iterations', type=int, help='Number of iterations', default=10, required=False)
 
 	args = vars(parser.parse_args())
@@ -212,7 +212,7 @@ def chooseAsignmentsLDA(fwCounts, fCounts):
 	for i in xrange(N):
 		fProbs = [posteriorLDA(fwCounts, fCounts, i, a) for a in xrange(3)]
 		fProbs = zip(*fProbs) # group by frame
-		fProbs = [np.prod(fProbs[f]) for f in xrange(frames)]
+		fProbs = [np.prod([fProbs[f]) for f in xrange(frames)]]
 		assigns[i] = fProbs.index(max(fProbs))
 	return assigns
 
