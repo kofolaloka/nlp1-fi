@@ -8,6 +8,7 @@ from collections import Counter, defaultdict
 from multiprocessing import Pool
 import math
 import numpy as np
+import os
 
 def main():
 	parser = argparse.ArgumentParser(description='Find alignments of bilingual corpus using EM training')
@@ -61,8 +62,12 @@ def outputResults(assigns):
 	results = [[] for f in xrange(frames)]
 	for i in xrange(N):
 		results[int(assigns[i])] += [data[i][0][0]]
+	
+	dirOut = 'Output/'+output
+	if not os.path.exists(dirOut):
+		os.makedirs(dirOut)
 	for f in xrange(frames):
-		with open('Output/'+output+'/frame '+str(f),'w') as out:
+		with open(dirOut+'/frame '+str(f),'w') as out:
 			r = list(set(results[f]))
 			#print r
 			out.write('\n'.join(r))
@@ -212,7 +217,7 @@ def chooseAsignmentsLDA(fwCounts, fCounts):
 	for i in xrange(N):
 		fProbs = [posteriorLDA(fwCounts, fCounts, i, a) for a in xrange(3)]
 		fProbs = zip(*fProbs) # group by frame
-		fProbs = [np.prod([fProbs[f]) for f in xrange(frames)]]
+		fProbs = [np.prod(fProbs[f]) for f in xrange(frames)]
 		assigns[i] = fProbs.index(max(fProbs))
 	return assigns
 
