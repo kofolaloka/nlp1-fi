@@ -15,8 +15,13 @@ def main():
 	parser.add_argument('-m','--model', type=str, help='Model used for training', choices=['0-Rooth', '0-OConnor', '1-OConnor'], default='0-Rooth', required=False)
 	parser.add_argument('-f','--frames', type=int, help='Number of frames to look for', default=10, required=False)
 	parser.add_argument('-t','--threads', type=int, help='Number of threads', default=1, required=False)
-	
+	parser.add_argument('-o','--output', type=bool, help='Output', default='', required=False)
+	parser.add_argument('-it','--iterations', type=int, help='Number of iterations', default=10, required=False)
+
 	args = vars(parser.parse_args())
+
+	global iterations
+	iterations = args['iterations']
 
 	global frames
 	frames = args['frames']
@@ -43,6 +48,24 @@ def main():
 		assigns = emTraining()
 	if args['model'] == '0-OConnor':
 		assigns = lda()
+
+
+	if args['output']:
+		global output
+		output = args['output']
+		outputResults(assigns)
+
+
+def outputResults(assigns):
+	print 'Writing output...'
+	results = [[] for f in xrange(frames)]
+	for i in xrange(N):
+		results[int(assigns[i])] += [data[i][0][0]]
+	for f in xrange(frames):
+		with open('Output/'+output+'/frame '+str(f),'w') as out:
+			r = list(set(results[f]))
+			#print r
+			out.write('\n'.join(r))
 
 
 def readData(dataFile):
@@ -86,6 +109,7 @@ def maximizePhi(pTable):
 	n = int(math.ceil(frames/float(threads)))
 	args = zip([pTable]*threads, [range(frames)[i:i+n] for i in xrange(0, frames, n)])
 	phi = p.map(maximizePhiThread, args)
+	p.close()
 	return list(chain.from_iterable(phi))
 
 
@@ -109,6 +133,7 @@ def maximizeTheta(pTable):
 	n = int(math.ceil(frames/float(threads)))
 	args = zip([pTable]*threads, [range(frames)[i:i+n] for i in xrange(0, frames, n)])
 	thetaMap = p.map(maximizeThetaThread, args)
+	p.close()
 	thetaList = list(chain.from_iterable(thetaMap))
 	# normalize
 	num = sum(thetaList)
@@ -139,7 +164,7 @@ def chooseAssignmentsEM(phi):
 	for i in xrange(N):
 		argmaxF = [0, None]
 		for f in xrange(frames):
-			pf = np.prod(phi[f][a][data[i][2][a]] for a in xrange(3))
+			pf = np.prod([phi[f][a][data[i][2][a]] for a in xrange(3)])
 			if pf > argmaxF[0]:
 				argmaxF = [pf, f]
 		assigns[i] = argmaxF[1]
@@ -147,7 +172,7 @@ def chooseAssignmentsEM(phi):
 	return assigns
 
 
-def emTraining(iterations=2):
+def emTraining():
 	print 'Starting EM training...'
 	globalStart = time.time()
 
@@ -201,7 +226,7 @@ def fwCountsThread((assigns, globalFs)):
 	return fwCounts
 
 
-def lda(prior=False, iterations=4):
+def lda(prior=False):
 	print 'Starting LDA...'
 	globalStart = time.time()
 
@@ -214,6 +239,7 @@ def lda(prior=False, iterations=4):
 	n = int(math.ceil(frames/float(threads)))
 	args = zip([assigns]*threads, [range(frames)[i:i+n] for i in xrange(0, frames, n)])
 	fwCountsMap = p.map(fwCountsThread, args)
+	p.close()
 	fwCounts = list(chain.from_iterable(fwCountsMap))
 	print '\t* C(f,w) calculated in', getDuration(start, time.time()), '*'
 	# C(f)
