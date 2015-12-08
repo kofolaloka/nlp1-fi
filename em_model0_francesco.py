@@ -23,7 +23,6 @@ def e_step(word_indexes, theta, phi):
     return mus
 
 def m_step_phi(D, word_indexes, mus_times_counts):
-    # FIXME: add the counts!
     wi = np.array(word_indexes)
     phi = np.zeros((F,A,D))
     selected = phi[:,range(A),word_indexes] # shape (F,#triples,A)

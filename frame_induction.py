@@ -15,7 +15,7 @@ def main():
 	parser.add_argument('-m','--model', type=str, help='Model used for training', choices=['0-Rooth', '0-OConnor', '1-OConnor'], default='0-Rooth', required=False)
 	parser.add_argument('-f','--frames', type=int, help='Number of frames to look for', default=10, required=False)
 	parser.add_argument('-t','--threads', type=int, help='Number of threads', default=1, required=False)
-	
+
 	args = vars(parser.parse_args())
 
 	global frames
@@ -73,9 +73,9 @@ def estimatePosterior(phi, theta):
 		for a in xrange(3):
 			w = data[i][2][a]
 			for f in xrange(frames):
-				pTable[w][f] = theta[f]*phi[f][a][w]
+				pTable[w][f] += theta[f]*phi[f][a][w]
 	# normalize
-	for w in xrange(V):	
+	for w in xrange(V):
 		num = sum(pTable[w])
 		pTable[w] = [pTable[w][f]/num for f in xrange(frames)]
 	return pTable
@@ -96,7 +96,7 @@ def maximizePhiThread((pTable, globalFs)):
 		for a in xrange(3):
 			for w in xrange(V):
 				for i in xrange(N):
-					if data[i][2][a] == w:	
+					if data[i][2][a] == w:
 						phi[f][a][w] += data[i][1]*pTable[w][globalFs[f]]
 			# normalize
 			num = sum(phi[f][a])
@@ -161,7 +161,7 @@ def emTraining(iterations=2):
 		print '\tIteration', str(it)
 		start = time.time()
 
-		pTable = estimatePosterior(phi, theta) 
+		pTable = estimatePosterior(phi, theta)
 		phi = maximizePhi(pTable)
 		theta = maximizeTheta(pTable)
 
@@ -176,7 +176,7 @@ def posteriorLDA(fwCounts, fCounts, i, a):
 	fProbs = np.zeros(frames)
 	wa = data[i][2][a]
 	for f in xrange(frames):
-		fProbs[f] = (((beta+fwCounts[f][wa])/(beta+fCounts[f])) 
+		fProbs[f] = (((beta+fwCounts[f][wa])/(beta+fCounts[f]))
 						* (fCounts[f]/sum(fCounts)))
 	num = sum(fProbs)
 	return [fProbs[f]/num for f in xrange(frames)]
@@ -194,9 +194,9 @@ def chooseAsignmentsLDA(fwCounts, fCounts):
 
 def fwCountsThread((assigns, globalFs)):
 	localF = len(globalFs)
-	fwCounts = [[sum(sum(float(data[i][1]) for a in xrange(3) 
-				if (data[i][2][a] == w and assigns[i][a] == globalFs[f])) for i in xrange(N)) 
-					for w in xrange(V)] 
+	fwCounts = [[sum(sum(float(data[i][1]) for a in xrange(3)
+				if (data[i][2][a] == w and assigns[i][a] == globalFs[f])) for i in xrange(N))
+					for w in xrange(V)]
 						for f in xrange(localF)]
 	return fwCounts
 
@@ -217,9 +217,9 @@ def lda(prior=False, iterations=4):
 	fwCounts = list(chain.from_iterable(fwCountsMap))
 	print '\t* C(f,w) calculated in', getDuration(start, time.time()), '*'
 	# C(f)
-	fCounts = [sum(sum(float(data[i][1]) for a in xrange(3) if assigns[i][a] == f) for i in xrange(N)) 
+	fCounts = [sum(sum(float(data[i][1]) for a in xrange(3) if assigns[i][a] == f) for i in xrange(N))
 					for f in xrange(frames)]
-	
+
 	perms = list(permutations(range(3)))
 	P = len(perms)
 	# 3. repeat long enough
@@ -228,13 +228,13 @@ def lda(prior=False, iterations=4):
 		start = time.time()
 
 		for i in xrange(N):
-			# 2. randomly choose a variable and draw it's new value from 
-			# the respective conditional probability 
+			# 2. randomly choose a variable and draw it's new value from
+			# the respective conditional probability
 			for a in perms[np.random.randint(P)]:
 				# update counts to reflect removal of w_i^a's assignment
 				fwCounts[assigns[i][a]][data[i][2][a]] -= data[i][1]
 				fCounts[assigns[i][a]] -= data[i][1]
-				
+
 				# assign new frame to w_i^a
 				fProbs = posteriorLDA(fwCounts, fCounts, i, a)
 				assigns[i][a] = fProbs.index(max(fProbs))
