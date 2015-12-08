@@ -145,6 +145,10 @@ class Tome(object):
         return 'Tome("%s")'%self.filename
 
 class TomeVoc(object):
+    """
+    this object contains auxiliary functions to use in handling a number
+    of tomes.
+    """
 
     def __init__(self, tomes):
         assert type(tomes) is list
@@ -152,12 +156,19 @@ class TomeVoc(object):
 
     @property
     def triples(self):
+        """
+        returns a generator (not a list!, but still iterable) of all the triples
+        you can use it for a for loop
+        """
         for tome in self.tomes:
             for triple in tome:
                 yield triple
 
     @property
     def vocabulary(self):
+        """
+        returns the vocabulary of sorted words-strings
+        """
         if hasattr(self,'_vocabulary'):
             # lazy evaluation for the win!
             return self._vocabulary
@@ -169,33 +180,16 @@ class TomeVoc(object):
         self._vocabulary = sorted(tmp)
         return self._vocabulary
 
-    """
-    def _dicts(self):
-        dd = []
-        for tome in self.tomes:
-            for triple in tome:
-                d = dict(zip(
-                    triple.tolist()[:3],
-                    [1]*3
-                ))
-                dd.append(d)
-        return dd
-    """
-
     @property
     def vectors(self):
-        if hasattr(self,'_vectors'):
-            return self._vectors
-
         raise("not implemented")
-        dd = self._dicts()
-        voc = self.vocabulary
-        dv = sklearn.feature_extraction.DictVectorizer()
-        dv.fit(voc)
-        dv.transform()
 
     @property
     def indexes(self):
+        """
+        return all the word indexes in each triple
+        (not numpy array, but you just need to np.array' the return value)
+        """
         if hasattr(self,'_indexes'):
             # lazy evaluation for the win!
             return self._indexes
@@ -204,6 +198,7 @@ class TomeVoc(object):
         voc = self.vocabulary
         for triple in self.triples:
             triple_indexes = [
+                # get the index of the word in the vocabulary for each word-string
                 voc.index(word)
                 for word
                 in triple.tolist()[:3]
@@ -213,11 +208,15 @@ class TomeVoc(object):
 
     @property
     def counts(self):
+        """
+        returns the counts associated to each triple
+        """
         if hasattr(self, '_counts'):
-            return self._counts
+            return self._counts # lazy evaluation
         self._counts = []
         for tome in self.tomes:
             for triple in tome:
+                # index of the count is 3 (fourth column)
                 self._counts.append(triple.tolist()[3])
         return self._counts
 
