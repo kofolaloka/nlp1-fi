@@ -6,39 +6,74 @@ import sklearn.feature_extraction
 import os.path
 
 class Triple(dict):
+    """
+    this represents a triple, which means a verb,subject,object and a numerical value
+    Please notice that extends a dictionary. Which means that you can attach
+    additional (meta)information to it.
+    """
 
     def __init__(self,*args):
+        """
+        constructor
+        """
         super(Triple,self).__init__()
         assert len(args) == len(Triple.members()),"Cannot create Triple: given len(args) is %d while len(Triple.members()) is %d"%(len(args),len(Triple.members()))
 
         for h,a in zip(Triple.members(),args):
+            # the Triple acts as a dictionary. Here the values are set with
+            # proper keys
             self[h] = a
 
     @staticmethod
     def members():
+        """
+        this are the mandatory "keys" of the triple
+        """
         return ['v','s','o','value']
 
     @staticmethod
     def members_idx(m):
+        """
+        input: a string that might be in members
+        returns the numerical index (column)
+        """
         return map(Triple.members().index,m)
 
     def totabs(self):
+        """
+        tabs (string) representation of the triple.
+        Useful for dumping it into a tab-separated csv file
+        """
         return '\t'.join(map(str,self.tolist()))
 
     def tolist(self):
+        """
+        returns the triples as a list (key names are omitted of course)
+        """
         return [self[m] for m in Triple.members()]
 
     def __str__(self):
+        """
+        string representation of the triple. Uses dict's (parent) string representation
+        """
         return super(Triple,self).__str__()
 
     def __repr__(self):
+        """
+        unique string representation, likely a string representation of the construction
+        """
         return 'Triple('+','.join(map(str,self.tolist()))+')'
 
 class TomeException(Exception):
+    """
+    exception for errors in the Tome
+    """
     pass
 
 class Tome(object):
-
+    """
+    represents a read CSV file
+    """
     def __init__(self, a):
         self.filename = self._df = None
         if type(a) is str:
@@ -57,6 +92,9 @@ class Tome(object):
             raise TomeException("wrong constructor argument type")
 
     def _unbox_as_df(self):
+        """
+        opens and read the file, using Pandas
+        """
         print "unboxing %s ..."%self.filename
         if not os.path.isfile(self.filename):
             raise TomeException("file %s does not exist"%self.filename)
@@ -78,6 +116,10 @@ class Tome(object):
         return df
 
     def df(self):
+        """
+        returns the internally stored pandas.dataframe of the tome
+        FIXME: probably needs lazy evaluation
+        """
         if self.filename is not None:
             return self._unbox_as_df()
         else:
@@ -85,6 +127,9 @@ class Tome(object):
             return self._df
 
     def _group(self, members_selected=None):
+        """
+        group using pandas
+        """
         df_ = self.df()
 
         if members_selected is None:
@@ -95,22 +140,37 @@ class Tome(object):
         return ret
 
     def _group_sum_df(self,fields):
+        """
+        group and sum (as in SQL) using pandas
+        """
         tmp = self._group(fields)
         ret = tmp.sum().reset_index()
         return ret
 
     def _to_triples(self,df_):
+        """
+        generators of triples contained in the tome
+        """
         for i,row in df_.iterrows():
             yield Triple(*row)
 
     def __iter__(self):
+        """
+        the tome itself is iterable, you can just use it in a for loop to get the triples
+        """
         return self._to_triples(self.df())
 
     def group_sum(self, fields):
+        """
+        group+sum operation, mostly useful to aggregate per verb
+        """
         tmp = self._group_sum_df(fields)
         return Tome(tmp)
 
     def sort(self, fields=None,ascending=False):
+        """
+        sort the tome according to a list of fields (example: verb or value)
+        """
         df_ = self.df()
 
         if fields is None:
@@ -122,10 +182,17 @@ class Tome(object):
         return Tome(df_sort)
 
     def first(self,amount):
+        """
+        returns a new tome that contains just the first `amount` triples in this tome
+        """
         df_ = self.df()
         return Tome(df_[:amount])
 
     def writer(self):
+        """
+        returns a function(!) that will write in a file associated to the tome.
+        Useful if you created a new tome and need to dump some data into it
+        """
         handle = gzip.open(self.filename, "wb")
 
         def _fn(payload):
@@ -139,9 +206,15 @@ class Tome(object):
         return _fn
 
     def __str__(self):
+        """
+        string representation of the tome
+        """
         return self.__repr__()
 
     def __repr__(self):
+        """
+        unique string representation of the tome (likely how is it constructed)
+        """
         return 'Tome("%s")'%self.filename
 
 class TomeVoc(object):
