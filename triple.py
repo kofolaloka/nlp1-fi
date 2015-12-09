@@ -136,6 +136,8 @@ class Tome(object):
             members_selected = Triple.members()
 
         field_idx = Triple.members_idx(members_selected)
+        for id in field_idx:
+            assert id in df_.columns,"there should be a column %d in the dataframe, but it's not in the column list %s"%(id,str(self.columns))
         ret = df_.groupby(field_idx)
         return ret
 
