@@ -1,4 +1,4 @@
-from os import listdir, path, remove
+from os import listdir, path, remove, mkdir, stat
 import argparse
 
 def main():
@@ -30,7 +30,7 @@ def vocab(folder):
     return vocab
 
 def coverage(vocab_clusters, vocab_fn):
-    ratio = len(vocab_clusters)/ len(vocab_fn)
+    ratio = len(vocab_clusters)*1.0/ len(vocab_fn)*1.0
     return ratio
 
 def dice_similarity(set1, set2):
@@ -64,6 +64,7 @@ def max_match(clusters_dir, fn_dir, output_folder):
     fn_frames = listdir(fn_dir)
     output_path = path.join(output_folder, 'max_match_clusters')
     output_file = open(output_path, 'w')
+    fn_wordsets = {}
     for frame in frames:
         frame_id = frame
         frame_path = path.join(clusters_dir, frame)
@@ -81,14 +82,29 @@ def max_match(clusters_dir, fn_dir, output_folder):
             for line in frame_fn:
 		verb = line.strip('\n')
                 wordset_fn.add(verb)
+	    fn_wordsets[frame_fn_id] = wordset_fn
             sim = dice_similarity(wordset, wordset_fn)
             sims[frame_fn_id] = sim
 	    frame_fn.close()
 	inverse = [(value, key) for key, value in sims.items()]
 	max_match_frame = max(inverse)[1]
+	max_match_frame_wordset = fn_wordsets[max_match_frame]
         max_match_frame_value = max(inverse)[0]
-        output_file.write(frame_id + '\t' +  max_match_frame+ '\t' + str(max_match_frame_value)+ '\n')
+	overlap = wordset.intersection(max_match_frame_wordset)
+	common = len(overlap)
+        output_file.write(frame_id + ' ('+ str(len(wordset))+ ')\t' +  max_match_frame + ' ('+ str(len(max_match_frame_wordset))+ ')\t' + 'Sim: '+ str(max_match_frame_value)+ '\t Overlap: '+ str(common)+ '\n')
 	frame.close()
+	if max_match_frame_value >= 0.1:
+		overlap = []
+		overlap_file = frame_id + '_' + max_match_frame
+		overlap_file = path.join(output_folder, overlap_file)
+		overlap_file = open(overlap_file, 'w')
+		overlap = wordset.intersection(max_match_frame_wordset)
+		common = len(overlap)
+		for verb in overlap:
+			overlap_file.write(verb + '\n')
+                overlap_file.close()
+
 
 if __name__ == '__main__':
     main()
