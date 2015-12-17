@@ -41,8 +41,8 @@ def main():
 	global N
 	tuples, counts = readData(args['input'])
 	N = len(tuples)
-	
-	
+
+
 
 	global voc
 	global V
@@ -69,7 +69,7 @@ def main():
 			outputLikelihoods(likelihoods)
 
 
-	
+
 	if bool(args['model']=='0-Rooth') & args['plot']:
 		#likelihoods = np.array(likelihoods)
 		#xnew = np.linspace(likelihoods.min(),likelihoods.max(),300)
@@ -89,7 +89,7 @@ def outputResults(assigns):
 	results = [[] for f in xrange(frames)]
 	for i in xrange(N):
 		results[int(assigns[i])] += [tuples[i][0]]
-	
+
 	if not os.path.exists(output):
 		os.makedirs(output)
 	for f in xrange(frames):
@@ -133,7 +133,7 @@ def estimatePosterior(phi, theta):
 	for w in xrange(V):
 		for a in xrange(3):
 			for f in xrange(frames):
-				pTable[w][a][f] = theta[f]*phi[f][a][w] 
+				pTable[w][a][f] = theta[f]*phi[f][a][w]
 			# normalize
 			num = sum(pTable[w][a])
 			if num > 0:
@@ -143,7 +143,7 @@ def estimatePosterior(phi, theta):
 
 
 def estimatePosteriorNumpy(phi, theta):
-	pTable = np.multiply(theta, phi.transpose(2,1,0)) 
+	pTable = np.multiply(theta, phi.transpose(2,1,0))
 	num = np.sum(pTable, axis=2)[:,:,np.newaxis]
 	num[num==0] = 1 #prevent divison by 0
 	return np.divide(pTable, num)
@@ -155,7 +155,7 @@ def maximizePhi(pTable):
 		for a in xrange(3):
 			for w in xrange(V):
 				for i in xrange(N):
-					if vTuples[i][a] == w:	
+					if vTuples[i][a] == w:
 						phi[f][a][w] += counts[i]*pTable[w][a][f]
 			# normalize
 			phi[f][a] = phi[f][a]/sum(phi[f][a])
@@ -179,7 +179,7 @@ def maximizeTheta(pTable):
 		theta[f] = sum([counts[i]*sum([pTable[vTuples[i][a]][a][f] for a in xrange(3)]) for i in xrange(N)])
 	# normalize
 	return theta/sum(theta)
-	
+
 
 def maximizeThetaNumpy(pTableForN):
 	theta = np.multiply(counts, np.sum(pTableForN.transpose(2,0,1), axis=2))
@@ -203,7 +203,7 @@ def emLikelihoodNumpy(pTableForN, phi, theta):
 	#log(theta(f)*phi(w))
 	thetaPhi = np.multiply(theta, phi.transpose(2,1,0)) #(f, a, w)
 	thetaPhiForN = np.log(thetaPhi[list(vTuples), range(3)]) #(f, a, i)
-	
+
 	ll = np.multiply(cPosForN.transpose(2,1,0), thetaPhiForN)
 	return np.sum(ll)
 
@@ -255,9 +255,9 @@ def emTraining():
 		print '\tIteration', str(it)
 		start = time.time()
 
-		
-		
-		pTable = estimatePosteriorNumpy(phi, theta) 	
+
+
+		pTable = estimatePosteriorNumpy(phi, theta)
 		#print 'p(f|w) equal:',np.array_equal(pTable, estimatePosterior(phi, theta))
 
 
@@ -295,14 +295,14 @@ def emTraining():
 
 		#print '\t\tLog Likehood (other):', str(ll_o)
 		print '\t\tLog Likehood:', '%.10f' % ll
-		
+
 
 		print '>', ll > prevLL
 		#print '=',ll == prevLL
 		prevLL = ll
 	print 'EM training completed in', getDuration(globalStart, time.time())
 
-	
+
 	#'''
 	#st = time.time()
 	#assigns_o = chooseAssignmentsEM(phi)
@@ -312,7 +312,7 @@ def emTraining():
 	assigns = chooseAssignmentsEMNumpy(phi)
 	#print getDuration(st, time.time())
 	#print 'assignments equal:',np.array_equal(assigns_o, assigns)
-	
+
 	return likelihoods, assigns
 	#'''
 
@@ -320,7 +320,7 @@ def posteriorLDA(fwCounts, fCounts, i, a):
 	fProbs = np.zeros(frames)
 	wa = vTuples[i][a]
 	for f in xrange(frames):
-		fProbs[f] = (((beta+fwCounts[f][wa])/(V*beta+fCounts[f])) 
+		fProbs[f] = (((beta+fwCounts[f][wa])/(V*beta+fCounts[f]))
 						* (fCounts[f]/sum(fCounts)))
 	num = sum(fProbs)
 	return [fProbs[f]/num for f in xrange(frames)]
@@ -342,10 +342,24 @@ def chooseAssignmentsLDANumpy(fwCounts, fCounts):
 
 def fwCountsThread((assigns, globalFs)):
 	localF = len(globalFs)
-	fwCounts = [[sum(sum(float(counts[i]) for a in xrange(3) 
-				if (vTuples[i][a]==w and assigns[i][a]==globalFs[f])) for i in xrange(N)) 
-					for w in xrange(V)] 
-						for f in xrange(localF)]
+	fwCounts = [
+            [
+                sum(
+                    sum(
+                        float(counts[i])
+                        for a
+                        in xrange(3)
+                        if (vTuples[i][a]==w and assigns[i][a]==globalFs[f])
+                    )
+                    for i
+                    in xrange(N)
+                )
+                for w
+                in xrange(V)
+            ]
+            for f
+            in xrange(localF)
+        ]
 	return fwCounts
 
 
@@ -366,9 +380,9 @@ def lda(prior=False):
 	fwCounts = list(chain.from_iterable(fwCountsMap))
 	print '\t* C(f,w) calculated in', getDuration(start, time.time()), '*'
 	# C(f)
-	fCounts = [sum(sum(float(data[i][1]) for a in xrange(3) if assigns[i][a] == f) for i in xrange(N)) 
+	fCounts = [sum(sum(float(data[i][1]) for a in xrange(3) if assigns[i][a] == f) for i in xrange(N))
 					for f in xrange(frames)]
-	
+
 	t1 = chooseAssignmentsLDA(fwCounts, fCounts)
 	t2 = chooseAssignmentsLDANumpy(fwCounts, fCounts)
 
@@ -380,13 +394,13 @@ def lda(prior=False):
 		start = time.time()
 
 		for i in xrange(N):
-			# 2. randomly choose a variable and draw it's new value from 
-			# the respective conditional probability 
+			# 2. randomly choose a variable and draw it's new value from
+			# the respective conditional probability
 			for a in perms[np.random.randint(P)]:
 				# update counts to reflect removal of w_i^a's assignment
 				fwCounts[assigns[i][a]][vTuples[i][a]] -= counts[i]
 				fCounts[assigns[i][a]] -= counts[i]
-				
+
 				# assign new frame to w_i^a
 				fProbs = posteriorLDA(fwCounts, fCounts, i, a)
 				assigns[i][a] = fProbs.index(max(fProbs))
