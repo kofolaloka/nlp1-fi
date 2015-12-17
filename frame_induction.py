@@ -40,9 +40,9 @@ def main():
 	global counts
 	global N
 	tuples, counts = readData(args['input'])
+        global counts_np
+        counts_np = np.array(counts)
 	N = len(tuples)
-
-
 
 	global voc
 	global V
@@ -51,6 +51,17 @@ def main():
 	global vTuples
 	vTuples = encodeTuples()
 
+        global vTuples_np
+        vTuples_np = np.array(vTuples)
+
+        global word_tuples_idx
+        word_tuples_idx = [
+            np.array(
+                np.where(vTuples_np == w)
+            )[0]# take just the first row, that is locations on the first dimensions (tuples)
+            for w # the list has one element (list of tuple indices) for each word
+            in xrange(V):
+        ] # it's a list, not a matrix because the "rows" have different length (indices of occurrences)
 	global beta
 	beta = 0.001
 
@@ -340,6 +351,20 @@ def chooseAssignmentsLDANumpy(fwCounts, fCounts):
 	posterior = 0
 
 
+def fwCountsThreadNumpy((assigns, globalFs)):
+	localF = len(globalFs)
+
+	fwCounts = [
+            [
+                np.sum(counts_np[word_tuples_idx[w])
+                for w
+                in xrange(V) # 1 row for every word in the vocabulary
+            ]
+            for f
+            in xrange(localF) # one column for every frame
+        ]
+	return fwCounts
+
 def fwCountsThread((assigns, globalFs)):
 	localF = len(globalFs)
 	fwCounts = [
@@ -349,7 +374,8 @@ def fwCountsThread((assigns, globalFs)):
                         float(counts[i])
                         for a
                         in xrange(3)
-                        if (vTuples[i][a]==w and assigns[i][a]==globalFs[f])
+                        if vTuples[i][a]==w
+                            and assigns[i][a]==globalFs[f]
                     )
                     for i
                     in xrange(N)
