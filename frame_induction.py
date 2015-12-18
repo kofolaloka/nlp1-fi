@@ -42,20 +42,25 @@ def main():
 	global N
 	tuples, counts = readData(args['input'])
         global counts_np
+        print "converting the counts to numpy..."
         counts_np = np.array(counts)
 	N = len(tuples)
 
 	global voc
 	global V
+        print "extracting the vocabulary..."
 	voc = extractVocabulary()
 	V = len(voc)
 	global vTuples
+        print "encoding the tuples..."
 	vTuples = encodeTuples()
 
         global vTuples_np
+        print "converting the tuples in numpy..."
         vTuples_np = np.array(vTuples)
 
         global word_tuples_idx
+        print "extracting the word indexes in the tuples..."
         word_tuples_idx = [
             np.array(
                 np.where(vTuples_np == w)
@@ -63,10 +68,12 @@ def main():
             for w # the list has one element (list of tuple indices) for each word
             in xrange(V)
         ] # it's a list, not a matrix because the "rows" have different length (indices of occurrences)
+        print "done."
 	global beta
 	beta = 0.001
 
 	assigns = []
+        print "starting inference.. the model you chose is %s"%args['model']
 	if args['model'] == '0-Rooth':
 		likelihoods, assigns = emTraining()
 	if args['model']=='0-OConnor':
@@ -133,6 +140,7 @@ def readData(dataFile):
                         c = float(c_raw)
 			counts.append(c)
 			#break
+        print "done."
 	return np.array(tuples), counts
 
 
