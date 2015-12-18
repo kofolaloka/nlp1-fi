@@ -405,8 +405,10 @@ def fwCountsThreadNumpy((assigns, globalFs)):
     fwCounts = [
         [
             np.sum(counts_np[
+                # this list is a list of tuple indexes
+                # basically I need a union of intersections
                 list(reduce(lambda s1,s2: s1.union(s2),
-                    [ # this list is a list of tuple indexes
+                    [
                         # those indexes are the indexes associated to the word
                         set(word_tuples_idx[w][a])
                             # but they also need to be associated to the frame
@@ -476,7 +478,9 @@ def lda(prior=False):
             in xrange(N)
         ]
 	#C(f,w)
-        _d = []
+        _d = [] # debug variable FIXME delete it
+        # here I am testing both functions
+        # FIXME of course this needs to be changed
         for f in [fwCountsThread, fwCountsThreadNumpy]:
             start = time.time()
             p = Pool(threads)
@@ -494,9 +498,7 @@ def lda(prior=False):
             fwCounts = list(chain.from_iterable(fwCountsMap))
             print '\t* C(f,w) calculated in', getDuration(start, time.time()), '*'
             _d.append(fwCounts)
-            print "hash is:",_hash(fwCounts)
 	# C(f)
-        import ipdb; ipdb.set_trace()
 	fCounts = [
             sum(
                 sum(
