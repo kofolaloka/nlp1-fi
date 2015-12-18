@@ -145,11 +145,10 @@ def readData(dataFile):
 
 
 def extractVocabulary():
-	vocabulary = []
-	for t in tuples:
-		vocabulary += t
-	return list(set(vocabulary))
-
+    flattened = tuples.flatten()
+    words_set = set(flattened)
+    vocabulary = list(words_set)
+    return vocabulary
 
 def encodeTuples():
 	return np.array([np.array([voc.index(tuples[i][a]) for a in xrange(3)]) for i in xrange(N)])
