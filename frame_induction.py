@@ -12,6 +12,7 @@ import os
 import matplotlib.pyplot as plt
 from scipy.interpolate import spline
 import gzip
+import md5
 
 def main():
 	parser = argparse.ArgumentParser(description='Find alignments of bilingual corpus using EM training')
@@ -151,8 +152,15 @@ def extractVocabulary():
     return vocabulary
 
 def encodeTuples():
-	return np.array([np.array([voc.index(tuples[i][a]) for a in xrange(3)]) for i in xrange(N)])
-
+    return np.array([
+        [
+            voc.index(tuples[i][a])
+            for a
+            in xrange(3)
+        ]
+        for i
+        in xrange(N)
+    ])
 
 #'''
 def estimatePosterior(phi, theta):
@@ -383,6 +391,7 @@ def fwCountsThreadNumpy((assigns, globalFs)):
 	return fwCounts
 
 def fwCountsThread((assigns, globalFs)):
+        print "fwCountsThread started.."
 	localF = len(globalFs)
 	fwCounts = [
             [
@@ -403,8 +412,18 @@ def fwCountsThread((assigns, globalFs)):
             for f
             in xrange(localF)
         ]
+        print "fwCountsThread returning."
 	return fwCounts
 
+def _hash(stuff):
+    """
+    returns a checksum (hex string format) of stuff
+    """
+    if type(stuff) is np.ndarray:
+        s = stuff.tostring()
+    elif type(stuff) is list:
+        s = str(stuff)
+    return md5.md5(s).hexdigest()
 
 def lda(prior=False):
 	print 'Starting LDA...'
@@ -422,9 +441,22 @@ def lda(prior=False):
 	p.close()
 	fwCounts = list(chain.from_iterable(fwCountsMap))
 	print '\t* C(f,w) calculated in', getDuration(start, time.time()), '*'
+        print "hash is:",_hash(fwCounts)
 	# C(f)
-	fCounts = [sum(sum(float(data[i][1]) for a in xrange(3) if assigns[i][a] == f) for i in xrange(N))
-					for f in xrange(frames)]
+	fCounts = [
+            sum(
+                sum(
+                    float(data[i][1])
+                    for a
+                    in xrange(3)
+                    if assigns[i][a] == f
+                )
+                for i
+                in xrange(N)
+            )
+            for f
+            in xrange(frames)
+        ]
 
 	t1 = chooseAssignmentsLDA(fwCounts, fCounts)
 	t2 = chooseAssignmentsLDANumpy(fwCounts, fCounts)
