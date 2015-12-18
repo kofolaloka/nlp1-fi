@@ -63,9 +63,16 @@ def main():
         global word_tuples_idx
         print "extracting the word indexes in the tuples..."
         word_tuples_idx = [
-            np.array(
-                np.where(vTuples_np == w)
-            )[0]# take just the first row, that is locations on the first dimensions (tuples)
+            [
+                np.array(
+                    # below: the 0 index is because a tuple of arrays,
+                    # one for each dimension, is returned
+                    # (the dimensionality is just 1)
+                    np.where(vTuples_np[:,a] == w)[0]
+                )
+                for a
+                in xrange(3)
+            ]
             for w # the list has one element (list of tuple indices) for each word
             in xrange(V)
         ] # it's a list, not a matrix because the "rows" have different length (indices of occurrences)
@@ -356,7 +363,7 @@ def posteriorLDA(fwCounts, fCounts, i, a):
 	fProbs = np.zeros(frames)
 	wa = vTuples[i][a]
 	for f in xrange(frames):
-		fProbs[f] = (((beta+fwCounts[f][wa])/(V*beta+fCounts[f]))
+ 		fProbs[f] = (((beta+fwCounts[f][wa])/(V*beta+fCounts[f]))
 						* (fCounts[f]/sum(fCounts)))
 	num = sum(fProbs)
 	return [fProbs[f]/num for f in xrange(frames)]
@@ -377,18 +384,46 @@ def chooseAssignmentsLDANumpy(fwCounts, fCounts):
 
 
 def fwCountsThreadNumpy((assigns, globalFs)):
-	localF = len(globalFs)
 
-	fwCounts = [
-            [
-                np.sum(counts_np[word_tuples_idx[w]])
-                for w
-                in xrange(V) # 1 row for every word in the vocabulary
-            ]
+    localF = len(globalFs)
+    print "calculating frame_tuples_idx..."
+    frame_tuples_idx = [
+        [
+            set([
+                i
+                for i
+                in xrange(len(counts_np))
+                if assigns[i][a] == f
+            ])
             for f
-            in xrange(localF) # one column for every frame
+            in xrange(localF)
         ]
-	return fwCounts
+        for a
+        in xrange(3)
+    ]
+    print "done. now calculating the fwCounts..."
+    fwCounts = [
+        [
+            np.sum(counts_np[
+                list(reduce(lambda s1,s2: s1.union(s2),
+                    [ # this list is a list of tuple indexes
+                        # those indexes are the indexes associated to the word
+                        set(word_tuples_idx[w][a])
+                            # but they also need to be associated to the frame
+                            .intersection(frame_tuples_idx[a][f])
+                        for a
+                        in xrange(3)
+                    ]
+                ))
+            ])
+            for w
+            in xrange(V) # 1 row for every word in the vocabulary
+        ]
+        for f
+        in xrange(localF) # one column for every frame
+    ]
+    print "done."
+    return fwCounts
 
 def fwCountsThread((assigns, globalFs)):
         print "fwCountsThread started.."
@@ -431,18 +466,37 @@ def lda(prior=False):
 
 	# 1. initialize randomly
 	print 'Initializing...'
-	assigns = [[np.random.randint(frames) for a in xrange(3)] for i in xrange(N)]
+	assigns = [
+            [
+                np.random.randint(frames)
+                for a
+                in xrange(3)
+            ]
+            for i
+            in xrange(N)
+        ]
 	#C(f,w)
-	start = time.time()
-	p = Pool(threads)
-	n = int(math.ceil(frames/float(threads)))
-	args = zip([assigns]*threads, [range(frames)[i:i+n] for i in xrange(0, frames, n)])
-	fwCountsMap = p.map(fwCountsThread, args)
-	p.close()
-	fwCounts = list(chain.from_iterable(fwCountsMap))
-	print '\t* C(f,w) calculated in', getDuration(start, time.time()), '*'
-        print "hash is:",_hash(fwCounts)
+        _d = []
+        for f in [fwCountsThread, fwCountsThreadNumpy]:
+            start = time.time()
+            p = Pool(threads)
+            n = int(math.ceil(frames/float(threads)))
+            args = zip(
+                [assigns]*threads,
+                [
+                    range(frames)[i:i+n]
+                    for i
+                    in xrange(0, frames, n)
+                ]
+            )
+            fwCountsMap = p.map(f, args)
+            p.close()
+            fwCounts = list(chain.from_iterable(fwCountsMap))
+            print '\t* C(f,w) calculated in', getDuration(start, time.time()), '*'
+            _d.append(fwCounts)
+            print "hash is:",_hash(fwCounts)
 	# C(f)
+        import ipdb; ipdb.set_trace()
 	fCounts = [
             sum(
                 sum(
