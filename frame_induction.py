@@ -11,6 +11,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from scipy.interpolate import spline
+import gzip
 
 def main():
 	parser = argparse.ArgumentParser(description='Find alignments of bilingual corpus using EM training')
@@ -60,7 +61,7 @@ def main():
                 np.where(vTuples_np == w)
             )[0]# take just the first row, that is locations on the first dimensions (tuples)
             for w # the list has one element (list of tuple indices) for each word
-            in xrange(V):
+            in xrange(V)
         ] # it's a list, not a matrix because the "rows" have different length (indices of occurrences)
 	global beta
 	beta = 0.001
@@ -117,11 +118,20 @@ def readData(dataFile):
 	print 'Reading data...'
 	tuples = []
 	counts = []
-	with open(dataFile, 'rU') as f:
+
+        if os.path.splitext(dataFile)[-1] == '.gz':
+            openfunc = gzip.open
+        else:
+            openfunc = open
+
+	with openfunc(dataFile, 'rU') as f:
 		for entry in f:
 			entry = entry.strip().split('\t')
-			tuples.append(np.array(entry[0:3]))
-			counts.append(float(entry[3]))
+                        _t = np.array(entry[0:3])
+			tuples.append(_t)
+                        c_raw = entry[3]
+                        c = float(c_raw)
+			counts.append(c)
 			#break
 	return np.array(tuples), counts
 
@@ -356,7 +366,7 @@ def fwCountsThreadNumpy((assigns, globalFs)):
 
 	fwCounts = [
             [
-                np.sum(counts_np[word_tuples_idx[w])
+                np.sum(counts_np[word_tuples_idx[w]])
                 for w
                 in xrange(V) # 1 row for every word in the vocabulary
             ]
