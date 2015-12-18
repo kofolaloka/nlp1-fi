@@ -1,3 +1,7 @@
 most_frequent
-triple.pyc
-utils.pyc
+*.pyc
+*.swp
+foo
+blabla
+.ropeproject
+
