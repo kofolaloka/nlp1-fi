@@ -98,12 +98,9 @@ def main():
 
 
 	if bool(args['model']=='0-Rooth') & args['plot']:
-		#likelihoods = np.array(likelihoods)
-		#xnew = np.linspace(likelihoods.min(),likelihoods.max(),300)
-		#ynew = spline(likelihoods,xnew)
 		plt.plot(likelihoods)
 		#'''
-		for i in xrange(49):
+		for i in xrange(9):
 			likelihoods, assigns = emTraining()
 			plt.plot(likelihoods)
 		#'''
@@ -287,7 +284,18 @@ def emTraining():
 			p = np.array([np.random.uniform(0,1) for w in xrange(V)])
 			phi[f][a] = p/sum(p)
 	'''
-	phi = np.random.dirichlet(np.ones(V), (frames,3))
+
+
+	#phi = np.random.dirichlet(np.ones(V), (frames,3))
+	#print phi.shape
+
+	alpha = 0.3
+	phi = np.zeros((3,V,frames))
+	for a in xrange(3):
+		vocA = np.array(list(set(vTuples.transpose(1,0)[a])))
+		phi[a,vocA,...] = np.random.dirichlet(np.ones(len(vocA))*alpha, frames).transpose(1,0)
+	phi = phi.transpose(2,0,1)
+
 
 	# uniform initialization
 	theta = np.array([float(1)/frames for f in xrange(frames)])
@@ -369,6 +377,12 @@ def posteriorLDA(fwCounts, fCounts, i, a):
 	return [fProbs[f]/num for f in xrange(frames)]
 
 
+def posteriorLDANumpy(fwCounts, fCounts, i, a):
+	fProbs = (((beta+fwCounts[:, vTuples[i][a]])/(V*beta+fCounts))
+					* (fCounts/sum(fCounts)))
+	return fProbs/sum(fProbs)
+
+
 def chooseAssignmentsLDA(fwCounts, fCounts):
 	assigns = np.zeros(N)
 	for i in xrange(N):
@@ -380,7 +394,11 @@ def chooseAssignmentsLDA(fwCounts, fCounts):
 
 
 def chooseAssignmentsLDANumpy(fwCounts, fCounts):
-	posterior = 0
+	fProbs = (((beta+fwCounts.transpose(1,0)[vTuples])/(V*beta+fCounts))
+					* (fCounts/sum(fCounts))) #(i, a, f)
+	fProbs = np.prod(fProbs.transpose(0,2,1), axis=2) #(i, f)
+	assigns = np.argmax(fProbs, axis=1) 
+	return assigns
 
 
 def fwCountsThreadNumpy((assigns, globalFs)):
@@ -402,8 +420,8 @@ def fwCountsThreadNumpy((assigns, globalFs)):
         in xrange(3)
     ]
     print "done. now calculating the fwCounts..."
-    fwCounts = [
-        [
+    fwCounts = np.array([
+        np.array([
             np.sum(counts_np[
                 # this list is a list of tuple indexes
                 # basically I need a union of intersections
@@ -420,10 +438,10 @@ def fwCountsThreadNumpy((assigns, globalFs)):
             ])
             for w
             in xrange(V) # 1 row for every word in the vocabulary
-        ]
+        ])
         for f
         in xrange(localF) # one column for every frame
-    ]
+    ])
     print "done."
     return fwCounts
 
@@ -468,20 +486,22 @@ def lda(prior=False):
 
 	# 1. initialize randomly
 	print 'Initializing...'
-	assigns = [
-            [
+	assigns = np.array([
+            np.array([
                 np.random.randint(frames)
                 for a
                 in xrange(3)
-            ]
+            ])
             for i
             in xrange(N)
-        ]
+        ])
 	#C(f,w)
         _d = [] # debug variable FIXME delete it
         # here I am testing both functions
         # FIXME of course this needs to be changed
-        for f in [fwCountsThread, fwCountsThreadNumpy]:
+        
+        #for f in [fwCountsThread, fwCountsThreadNumpy]:
+        for f in [fwCountsThreadNumpy]:
             start = time.time()
             p = Pool(threads)
             n = int(math.ceil(frames/float(threads)))
@@ -495,27 +515,21 @@ def lda(prior=False):
             )
             fwCountsMap = p.map(f, args)
             p.close()
-            fwCounts = list(chain.from_iterable(fwCountsMap))
+            fwCounts = np.array(list(chain.from_iterable(fwCountsMap)))
             print '\t* C(f,w) calculated in', getDuration(start, time.time()), '*'
             _d.append(fwCounts)
+
+
 	# C(f)
-	fCounts = [
-            sum(
-                sum(
-                    float(data[i][1])
-                    for a
-                    in xrange(3)
-                    if assigns[i][a] == f
-                )
-                for i
-                in xrange(N)
+	fCounts = np.array([
+            np.sum(
+                counts*((assigns==f).transpose(1,0))
             )
             for f
             in xrange(frames)
-        ]
+        ])
+	print '\t* C(f) calculated in', getDuration(start, time.time()), '*'
 
-	t1 = chooseAssignmentsLDA(fwCounts, fCounts)
-	t2 = chooseAssignmentsLDANumpy(fwCounts, fCounts)
 
 	perms = list(permutations(range(3)))
 	P = len(perms)
@@ -533,8 +547,11 @@ def lda(prior=False):
 				fCounts[assigns[i][a]] -= counts[i]
 
 				# assign new frame to w_i^a
-				fProbs = posteriorLDA(fwCounts, fCounts, i, a)
-				assigns[i][a] = fProbs.index(max(fProbs))
+				#fProbs = posteriorLDA(fwCounts, fCounts, i, a)
+				#assigns[i][a] = fProbs.index(max(fProbs))
+
+				fProbs = posteriorLDANumpy(fwCounts, fCounts, i, a)
+				assigns[i][a] = np.nonzero(fProbs==max(fProbs))[0][0]
 
 				# update counts to reflect assignment of the new frame
 				fwCounts[assigns[i][a]][vTuples[i][a]] += counts[i]
@@ -544,7 +561,7 @@ def lda(prior=False):
 	print 'LDA completed in', getDuration(globalStart, time.time())
 
 	# 4. choose the last assignment as a sample
-	return chooseAssignmentsLDA(fwCounts, fCounts)
+	return chooseAssignmentsLDANumpy(fwCounts, fCounts)
 
 
 def getDuration(start, stop):
