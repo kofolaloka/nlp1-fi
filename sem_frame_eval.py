@@ -14,10 +14,24 @@ def main():
     fn_dir = args["framenet"][0]
     output_folder = args["output_folder"][0]
     filter_clusters(clusters_dir)
-    max_match(clusters_dir, fn_dir, output_folder)
+    results = path.join(output_folder, 'results.txt')
+    results = open(results, 'w')
+    max_match(clusters_dir, fn_dir, output_folder, results)
     vocab_clusters = vocab(clusters_dir)
     vocab_fn = vocab(fn_dir)
-    print 'Coverage: '+ str(coverage(vocab_clusters, vocab_fn))
+    results.write('Coverage: '+ str(coverage(vocab_clusters, vocab_fn))+ '\n')
+    results.close()
+
+def average_sim(output_path, results):
+	output = open(output_path, 'r')
+	sum_sims = 0
+	lines = 0
+	for line in output:
+		lines = lines + 1
+		sim = float(line.split('\t')[4])
+		sum_sims = sum_sims + sim
+	average = sum_sims*1.0/lines*1.0
+	results.write('Average sim: '+ str(average) + '\n')
 
 def vocab(folder):
     vocab = set()
@@ -52,7 +66,7 @@ def filter_clusters(clusters_dir):
         else:
             frame.close()
 
-def max_match(clusters_dir, fn_dir, output_folder):
+def max_match(clusters_dir, fn_dir, output_folder, results):
     '''
     @param clusters_dir: clusters induced
     @param fn_dir: framenet clusters
@@ -62,6 +76,7 @@ def max_match(clusters_dir, fn_dir, output_folder):
     '''
     frames = listdir(clusters_dir)
     fn_frames = listdir(fn_dir)
+    sum_verbs = 0
     output_path = path.join(output_folder, 'max_match_clusters')
     output_file = open(output_path, 'w')
     fn_wordsets = {}
@@ -92,19 +107,48 @@ def max_match(clusters_dir, fn_dir, output_folder):
         max_match_frame_value = max(inverse)[0]
 	overlap = wordset.intersection(max_match_frame_wordset)
 	common = len(overlap)
-        output_file.write(frame_id + ' ('+ str(len(wordset))+ ')\t' +  max_match_frame + ' ('+ str(len(max_match_frame_wordset))+ ')\t' + 'Sim: '+ str(max_match_frame_value)+ '\t Overlap: '+ str(common)+ '\n')
+        output_file.write(frame_id + '\t'+ str(len(wordset))+ '\t' +  max_match_frame + '\t'+ str(len(max_match_frame_wordset))+ '\t'+ str(max_match_frame_value)+ '\t'+ str(common)+ '\n')
 	frame.close()
-	if max_match_frame_value >= 0.1:
-		overlap = []
-		overlap_file = frame_id + '_' + max_match_frame
-		overlap_file = path.join(output_folder, overlap_file)
-		overlap_file = open(overlap_file, 'w')
-		overlap = wordset.intersection(max_match_frame_wordset)
-		common = len(overlap)
-		for verb in overlap:
-			overlap_file.write(verb + '\n')
-                overlap_file.close()
+	overlap = []
+	overlap_file = frame_id + '_' + max_match_frame
+	overlap_file = path.join(output_folder, overlap_file)
+	overlap_file = open(overlap_file, 'w')
+	overlap = wordset.intersection(max_match_frame_wordset)
+	common = len(overlap)
+	for verb in overlap:
+		overlap_file.write(verb + '\n')
+        overlap_file.close()
+	sum_verbs = sum_verbs + len(wordset)
+    average_verb = sum_verbs*1.0/len(frames)*1.0
+    results.write('Average verbs for frame: ' + str(average_verb)+ '\n')
+    output_file.close()    
+    average_sim(output_path, results)
+    order(output_folder, output_path, overlap_file)
 
+def order(output_folder, output_path, output_file):
+	overlap_order = open(path.join(output_folder, 'max_match_overlap.txt'), 'w')
+	sim_order = open(path.join(output_folder, 'max_match_sim.txt'), 'w')
+	data = []
+	output_file = open(output_path, 'r')
+	for line in output_file:
+		entries = line.split('\t')
+		entries[5] = entries[5].replace('\n', '')
+		entries[5] = int(entries[5])
+		entries[4] = float(entries[4])
+		data.append(entries)
+	data_overlap = sorted(data, key = lambda x:x[5], reverse=True)
+	data_sim = sorted(data, key = lambda x:x[4], reverse=True)
+	for entry in data_overlap:
+		for i in entry:
+			overlap_order.write(str(i) + '\t')
+		overlap_order.write('\n')
+	for entry in data_sim:
+		for i in entry:
+			sim_order.write(str(i) + '\t')
+		sim_order.write('\n')
+	overlap_order.close()
+	sim_order.close()
+	output_file.close()
 
 if __name__ == '__main__':
     main()
