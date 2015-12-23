@@ -1,4 +1,0 @@
-allow
-sanction
-permit
-entitle

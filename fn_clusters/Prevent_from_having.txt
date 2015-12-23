@@ -1,3 +1,0 @@
-deprive
-starve
-deny

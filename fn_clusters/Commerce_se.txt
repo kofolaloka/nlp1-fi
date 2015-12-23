@@ -1,4 +1,0 @@
-retail
-sell
-end
-auction

@@ -1,5 +1,0 @@
-paint
-draw
-take [picture]
-sculpt
-cast
