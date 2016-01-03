@@ -79,14 +79,20 @@ def main():
         print "done."
 	global beta
 	beta = 0.001
+	global alpha
+	alpha = 0.1
 
+	global model
+	model = args['model']
 	assigns = []
         print "starting inference.. the model you chose is %s"%args['model']
-	if args['model'] == '0-Rooth':
+	if model=='0-Rooth':
 		likelihoods, assigns = emTraining()
-	if args['model']=='0-OConnor':
+	if model=='0-OConnor':
 		assigns = lda()
-
+	if model=='1-OConnor':
+		assigns = lda()
+	
 
 	if args['output']:
 		global output
@@ -377,8 +383,15 @@ def posteriorLDA(fwCounts, fCounts, i, a):
 	return [fProbs[f]/num for f in xrange(frames)]
 
 
-def posteriorLDANumpy(fwCounts, fCounts, i, a):
-	fProbs = (((beta+fwCounts[:, vTuples[i][a]])/(V*beta+fCounts))
+def posteriorLDANumpy(fwCounts, fCounts, i, a, fdCounts=[], dCounts=[], assigns=[], docIds=[]):
+	if model=='1-OConnor':
+		fProbs = (((beta+fwCounts[:, vTuples[i][a]])/(V*beta+fCounts))
+					* 
+					  ((alpha+fdCounts[:, docIds[i]])
+					  	/
+					  (frames*alpha+dCounts[docIds[i]])))
+	else:
+		fProbs = (((beta+fwCounts[:, vTuples[i][a]])/(V*beta+fCounts))
 					* (fCounts/sum(fCounts)))
 	return fProbs/sum(fProbs)
 
@@ -393,11 +406,21 @@ def chooseAssignmentsLDA(fwCounts, fCounts):
 	return assigns
 
 
-def chooseAssignmentsLDANumpy(fwCounts, fCounts):
-	fProbs = (((beta+fwCounts.transpose(1,0)[vTuples])/(V*beta+fCounts))
-					* (fCounts/sum(fCounts))) #(i, a, f)
+def chooseAssignmentsLDANumpy(fwCounts, fCounts, fdCounts=[], dCounts=[], assigns=[], docIds=[]):
+	print 'Choosing assignments...'
+	if model=='1-OConnor':
+		fProbs = (((beta+fwCounts.transpose(1,0)[vTuples])/(V*beta+fCounts)).transpose(2,1,0)
+					* 
+					  ((alpha+fdCounts[:, docIds])
+					  	/
+					  (frames*alpha+dCounts[docIds]))
+			     ).transpose(2,1,0)
+	else:
+		fProbs = (((beta+fwCounts.transpose(1,0)[vTuples])/(V*beta+fCounts))
+						* (fCounts/sum(fCounts))) #(i, a, f)
 	fProbs = np.prod(fProbs.transpose(0,2,1), axis=2) #(i, f)
 	assigns = np.argmax(fProbs, axis=1) 
+	print 'Completed choosing assignments...'
 	return assigns
 
 
@@ -495,6 +518,7 @@ def lda(prior=False):
             for i
             in xrange(N)
         ])
+
 	#C(f,w)
         _d = [] # debug variable FIXME delete it
         # here I am testing both functions
@@ -521,6 +545,7 @@ def lda(prior=False):
 
 
 	# C(f)
+	start = time.time()
 	fCounts = np.array([
             np.sum(
                 counts*((assigns==f).transpose(1,0))
@@ -530,6 +555,32 @@ def lda(prior=False):
         ])
 	print '\t* C(f) calculated in', getDuration(start, time.time()), '*'
 
+
+	if model == '1-OConnor':
+		verbs = vTuples.transpose(1,0)[1]
+		documents = np.array(list(set(verbs)))
+		D = len(documents)
+
+		docIds = np.array([np.array((verbs==documents[d])*d) 
+					for d in xrange(D)])
+		docIds = np.sum(docIds.transpose(1,0), axis=1)
+
+		#C(d)
+		start = time.time()
+		dCounts = np.array([(docIds==d)*counts for d in xrange(D)])
+		dCounts = np.sum(dCounts, axis=1)
+		print '\t* C(d) calculated in', getDuration(start, time.time()), '*' 
+		
+		#C(k,d)
+		start = time.time()
+		fdCounts = np.array([
+						np.array([
+							np.sum(counts*np.multiply(((assigns.transpose(1,0))[1]==k)*1, (docIds==d)*1)) 
+							for d in xrange(D)
+						]) 
+						for k in xrange(frames)
+					])
+		print '\t* C(f,d) calculated in', getDuration(start, time.time()), '*' 
 
 	perms = list(permutations(range(3)))
 	P = len(perms)
@@ -545,23 +596,28 @@ def lda(prior=False):
 				# update counts to reflect removal of w_i^a's assignment
 				fwCounts[assigns[i][a]][vTuples[i][a]] -= counts[i]
 				fCounts[assigns[i][a]] -= counts[i]
+				if model=='1-OConnor' and a==1:
+					fdCounts[assigns[i][1]][docIds[i]] -= counts[i]
 
 				# assign new frame to w_i^a
 				#fProbs = posteriorLDA(fwCounts, fCounts, i, a)
 				#assigns[i][a] = fProbs.index(max(fProbs))
 
-				fProbs = posteriorLDANumpy(fwCounts, fCounts, i, a)
+				fProbs = posteriorLDANumpy(fwCounts, fCounts, i, a, fdCounts, dCounts, assigns, docIds)
 				assigns[i][a] = np.nonzero(fProbs==max(fProbs))[0][0]
 
 				# update counts to reflect assignment of the new frame
 				fwCounts[assigns[i][a]][vTuples[i][a]] += counts[i]
 				fCounts[assigns[i][a]] += counts[i]
+				if model=='1-OConnor' and a==1:
+					fdCounts[assigns[i][1]][docIds[i]] += counts[i]
+				
 
 		print '\t\tIteration completed in', getDuration(start, time.time())
 	print 'LDA completed in', getDuration(globalStart, time.time())
 
 	# 4. choose the last assignment as a sample
-	return chooseAssignmentsLDANumpy(fwCounts, fCounts)
+	return chooseAssignmentsLDANumpy(fwCounts, fCounts, fdCounts, dCounts, assigns, docIds)
 
 
 def getDuration(start, stop):
