@@ -1,4 +1,0 @@
-revive
-restart
-reinstate
-resume

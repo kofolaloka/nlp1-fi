@@ -1,3 +1,0 @@
-shoot
-hit
-pick off

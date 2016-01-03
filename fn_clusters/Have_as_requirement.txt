@@ -1,4 +1,0 @@
-demand
-require
-take
-need

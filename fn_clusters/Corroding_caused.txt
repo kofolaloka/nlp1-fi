@@ -1,4 +1,0 @@
-corrode
-oxidize
-tarnish
-rust

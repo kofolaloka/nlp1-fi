@@ -1,3 +1,0 @@
-reserve
-book
-hold
