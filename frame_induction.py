@@ -15,46 +15,46 @@ import gzip
 import md5
 
 def main():
-	parser = argparse.ArgumentParser(description='Find alignments of bilingual corpus using EM training')
-	parser.add_argument('-i','--input', type=str, help='Pre-processed training data', required=True)
-	parser.add_argument('-m','--model', type=str, help='Model used for training', choices=['0-Rooth', '0-OConnor', '1-OConnor'], default='0-Rooth', required=False)
-	parser.add_argument('-f','--frames', type=int, help='Number of frames to look for', default=10, required=False)
-	parser.add_argument('-t','--threads', type=int, help='Number of threads', default=1, required=False)
-	parser.add_argument('-o','--output', type=str, help='Output', default='', required=False)
-	parser.add_argument('-it','--iterations', type=int, help='Number of iterations', default=10, required=False)
-	parser.add_argument('-p', '--plot', type=bool, help='Plot likelihood per iteration (only available for model 0-Rooth', default=False, required=False)
-	args = vars(parser.parse_args())
+    parser = argparse.ArgumentParser(description='Find alignments of bilingual corpus using EM training')
+    parser.add_argument('-i','--input', type=str, help='Pre-processed training data', required=True)
+    parser.add_argument('-m','--model', type=str, help='Model used for training', choices=['0-Rooth', '0-OConnor', '1-OConnor'], default='0-Rooth', required=False)
+    parser.add_argument('-f','--frames', type=int, help='Number of frames to look for', default=10, required=False)
+    parser.add_argument('-t','--threads', type=int, help='Number of threads', default=1, required=False)
+    parser.add_argument('-o','--output', type=str, help='Output', default='', required=False)
+    parser.add_argument('-it','--iterations', type=int, help='Number of iterations', default=10, required=False)
+    parser.add_argument('-p', '--plot', type=bool, help='Plot likelihood per iteration (only available for model 0-Rooth', default=False, required=False)
+    args = vars(parser.parse_args())
 
 
-	global check
-	check = True
+    global check
+    check = True
 
-	global iterations
-	iterations = args['iterations']
+    global iterations
+    iterations = args['iterations']
 
-	global frames
-	frames = args['frames']
+    global frames
+    frames = args['frames']
 
-	global threads
-	threads = args['threads']
+    global threads
+    threads = args['threads']
 
-	global tuples
-	global counts
-	global N
-	tuples, counts = readData(args['input'])
+    global tuples
+    global counts
+    global N
+    tuples, counts = readData(args['input'])
         global counts_np
         print "converting the counts to numpy..."
         counts_np = np.array(counts)
-	N = len(tuples)
+    N = len(tuples)
 
-	global voc
-	global V
+    global voc
+    global V
         print "extracting the vocabulary..."
-	voc = extractVocabulary()
-	V = len(voc)
-	global vTuples
+    voc = extractVocabulary()
+    V = len(voc)
+    global vTuples
         print "encoding the tuples..."
-	vTuples = encodeTuples()
+    vTuples = encodeTuples()
 
         global vTuples_np
         print "converting the tuples in numpy..."
@@ -77,82 +77,82 @@ def main():
             in xrange(V)
         ] # it's a list, not a matrix because the "rows" have different length (indices of occurrences)
         print "done."
-	global beta
-	beta = 0.001
-	global alpha
-	alpha = 0.1
+    global beta
+    beta = 0.001
+    global alpha
+    alpha = 0.1
 
-	global model
-	model = args['model']
-	assigns = []
+    global model
+    model = args['model']
+    assigns = []
         print "starting inference.. the model you chose is %s"%args['model']
-	if model=='0-Rooth':
-		likelihoods, assigns = emTraining()
-	if model=='0-OConnor':
-		assigns = lda()
-	if model=='1-OConnor':
-		assigns = lda()
+    if model=='0-Rooth':
+        likelihoods, assigns = emTraining()
+    if model=='0-OConnor':
+        assigns = lda()
+    if model=='1-OConnor':
+        assigns = lda()
 
 
-	if args['output']:
-		global output
-		output = args['output']
-		outputResults(assigns)
-		if args['model']=='0-Rooth':
-			outputLikelihoods(likelihoods)
+    if args['output']:
+        global output
+        output = args['output']
+        outputResults(assigns)
+        if args['model']=='0-Rooth':
+            outputLikelihoods(likelihoods)
 
 
 
-	if bool(args['model']=='0-Rooth') & args['plot']:
-		plt.plot(likelihoods)
-		#'''
-		for i in xrange(9):
-			likelihoods, assigns = emTraining()
-			plt.plot(likelihoods)
-		#'''
-		plt.ylabel('Log Likelihood')
-		plt.xlabel('Iteration')
-		plt.show()
+    if bool(args['model']=='0-Rooth') & args['plot']:
+        plt.plot(likelihoods)
+        #'''
+        for i in xrange(9):
+            likelihoods, assigns = emTraining()
+            plt.plot(likelihoods)
+        #'''
+        plt.ylabel('Log Likelihood')
+        plt.xlabel('Iteration')
+        plt.show()
 
 def outputResults(assigns):
-	print 'Writing output...'
-	results = [[] for f in xrange(frames)]
-	for i in xrange(N):
-		results[int(assigns[i])] += [tuples[i][0]]
+    print 'Writing output...'
+    results = [[] for f in xrange(frames)]
+    for i in xrange(N):
+        results[int(assigns[i])] += [tuples[i][0]]
 
-	if not os.path.exists(output):
-		os.makedirs(output)
-	for f in xrange(frames):
-		with open(output+'/frame '+str(f),'w') as out:
-			r = list(set(results[f]))
-			out.write('\n'.join(r))
+    if not os.path.exists(output):
+        os.makedirs(output)
+    for f in xrange(frames):
+        with open(output+'/frame '+str(f),'w') as out:
+            r = list(set(results[f]))
+            out.write('\n'.join(r))
 
 
 def outputLikelihoods(likelihoods):
-	with open(output+'/likelihoods', 'w') as out:
-		out.write(str(likelihoods))
+    with open(output+'/likelihoods', 'w') as out:
+        out.write(str(likelihoods))
 
 def readData(dataFile):
-	print 'Reading data...'
-	tuples = []
-	counts = []
+    print 'Reading data...'
+    tuples = []
+    counts = []
 
         if os.path.splitext(dataFile)[-1] == '.gz':
             openfunc = gzip.open
         else:
             openfunc = open
 
-	with openfunc(dataFile, 'rU') as f:
-		for entry in f:
-			entry = entry.strip().split('\t')
+    with openfunc(dataFile, 'rU') as f:
+        for entry in f:
+            entry = entry.strip().split('\t')
                         _t = np.array(entry[0:3])
-			tuples.append(_t)
+            tuples.append(_t)
                         c_raw = entry[3]
                         c = float(c_raw)
-			counts.append(c)
-			#break
+            counts.append(c)
+            #break
         print "done."
-	return np.array(tuples), counts
+    return np.array(tuples), counts
 
 
 def extractVocabulary():
@@ -174,236 +174,236 @@ def encodeTuples():
 
 #'''
 def estimatePosterior(phi, theta):
-	global check
-	pTable = np.array([np.array([np.zeros(frames) for a in xrange(3)]) for w in xrange(V)])
-	for w in xrange(V):
-		for a in xrange(3):
-			for f in xrange(frames):
-				pTable[w][a][f] = theta[f]*phi[f][a][w]
-			# normalize
-			num = sum(pTable[w][a])
-			if num > 0:
-				pTable[w][a] = pTable[w][a]/num
-	return pTable
+    global check
+    pTable = np.array([np.array([np.zeros(frames) for a in xrange(3)]) for w in xrange(V)])
+    for w in xrange(V):
+        for a in xrange(3):
+            for f in xrange(frames):
+                pTable[w][a][f] = theta[f]*phi[f][a][w]
+            # normalize
+            num = sum(pTable[w][a])
+            if num > 0:
+                pTable[w][a] = pTable[w][a]/num
+    return pTable
 #'''
 
 
 def estimatePosteriorNumpy(phi, theta):
-	pTable = np.multiply(theta, phi.transpose(2,1,0))
-	num = np.sum(pTable, axis=2)[:,:,np.newaxis]
-	num[num==0] = 1 #prevent divison by 0
-	return np.divide(pTable, num)
+    pTable = np.multiply(theta, phi.transpose(2,1,0))
+    num = np.sum(pTable, axis=2)[:,:,np.newaxis]
+    num[num==0] = 1 #prevent divison by 0
+    return np.divide(pTable, num)
 
 
 def maximizePhi(pTable):
-	phi = np.array([np.array([np.zeros(V) for w in xrange(3)]) for f in xrange(frames)])
-	for f in xrange(frames):
-		for a in xrange(3):
-			for w in xrange(V):
-				for i in xrange(N):
-					if vTuples[i][a] == w:
-						phi[f][a][w] += counts[i]*pTable[w][a][f]
-			# normalize
-			phi[f][a] = phi[f][a]/sum(phi[f][a])
-	return phi
+    phi = np.array([np.array([np.zeros(V) for w in xrange(3)]) for f in xrange(frames)])
+    for f in xrange(frames):
+        for a in xrange(3):
+            for w in xrange(V):
+                for i in xrange(N):
+                    if vTuples[i][a] == w:
+                        phi[f][a][w] += counts[i]*pTable[w][a][f]
+            # normalize
+            phi[f][a] = phi[f][a]/sum(phi[f][a])
+    return phi
 
 
 def maximizePhiNumpy(pTableForN):
-	c = np.multiply(counts, pTableForN.transpose(2,1,0)) #(f, a, i)
-	phi = np.zeros((3,V,frames)) #(a, w, f)
-	for a in xrange(3):
-			phi[a,:,...] = np.array([np.sum(c[:,a, np.nonzero(vTuples[:,a]==w)[0] ], axis=1)
-								for w in xrange(V)])
-	phi = phi.transpose(2,0,1)
-	num = np.expand_dims(np.sum(phi, axis=2),2)
-	return phi/num
+    c = np.multiply(counts, pTableForN.transpose(2,1,0)) #(f, a, i)
+    phi = np.zeros((3,V,frames)) #(a, w, f)
+    for a in xrange(3):
+            phi[a,:,...] = np.array([np.sum(c[:,a, np.nonzero(vTuples[:,a]==w)[0] ], axis=1)
+                                for w in xrange(V)])
+    phi = phi.transpose(2,0,1)
+    num = np.expand_dims(np.sum(phi, axis=2),2)
+    return phi/num
 
 
 def maximizeTheta(pTable):
-	theta = np.zeros(frames)
-	for f in xrange(frames):
-		theta[f] = sum([counts[i]*sum([pTable[vTuples[i][a]][a][f] for a in xrange(3)]) for i in xrange(N)])
-	# normalize
-	return theta/sum(theta)
+    theta = np.zeros(frames)
+    for f in xrange(frames):
+        theta[f] = sum([counts[i]*sum([pTable[vTuples[i][a]][a][f] for a in xrange(3)]) for i in xrange(N)])
+    # normalize
+    return theta/sum(theta)
 
 
 def maximizeThetaNumpy(pTableForN):
-	theta = np.multiply(counts, np.sum(pTableForN.transpose(2,0,1), axis=2))
-	theta = np.sum(theta, axis=1)
-	return theta/sum(theta)
+    theta = np.multiply(counts, np.sum(pTableForN.transpose(2,0,1), axis=2))
+    theta = np.sum(theta, axis=1)
+    return theta/sum(theta)
 
 def emLikelihood(pTable, phi, theta):
-	ll = 0
-	for i in xrange(N):
-		count = counts[i]
-		for a in xrange(3):
-			w = vTuples[i][a]
-			for f in xrange(frames):
-				ll += count*pTable[w][a][f]*math.log(theta[f]*phi[f][a][w])
-	return ll
+    ll = 0
+    for i in xrange(N):
+        count = counts[i]
+        for a in xrange(3):
+            w = vTuples[i][a]
+            for f in xrange(frames):
+                ll += count*pTable[w][a][f]*math.log(theta[f]*phi[f][a][w])
+    return ll
 
 
 def emLikelihoodNumpy(pTableForN, phi, theta):
-	# C(i)*p(f|w_i^a)
-	cPosForN = np.multiply(counts, pTableForN.transpose((2,1,0))) #(f, a, i)
-	#log(theta(f)*phi(w))
-	thetaPhi = np.multiply(theta, phi.transpose(2,1,0)) #(f, a, w)
-	thetaPhiForN = np.log(thetaPhi[list(vTuples), range(3)]) #(f, a, i)
+    # C(i)*p(f|w_i^a)
+    cPosForN = np.multiply(counts, pTableForN.transpose((2,1,0))) #(f, a, i)
+    #log(theta(f)*phi(w))
+    thetaPhi = np.multiply(theta, phi.transpose(2,1,0)) #(f, a, w)
+    thetaPhiForN = np.log(thetaPhi[list(vTuples), range(3)]) #(f, a, i)
 
-	ll = np.multiply(cPosForN.transpose(2,1,0), thetaPhiForN)
-	return np.sum(ll)
+    ll = np.multiply(cPosForN.transpose(2,1,0), thetaPhiForN)
+    return np.sum(ll)
 
 
 def chooseAssignmentsEM(phi):
-	print 'Choosing assignments...'
-	assigns = np.zeros(N)
-	for i in xrange(N):
-		argmaxF = [0, None]
-		for f in xrange(frames):
-			pf = np.prod([phi[f][a][vTuples[i][a]] for a in xrange(3)])
-			#pf = np.prod([phi[f][a][data[i][2][a]] for a in xrange(3)])
-			if pf > argmaxF[0]:
-				argmaxF = [pf, f]
-		assigns[i] = argmaxF[1]
-	print 'Completed choosing assignments...'
-	return assigns
+    print 'Choosing assignments...'
+    assigns = np.zeros(N)
+    for i in xrange(N):
+        argmaxF = [0, None]
+        for f in xrange(frames):
+            pf = np.prod([phi[f][a][vTuples[i][a]] for a in xrange(3)])
+            #pf = np.prod([phi[f][a][data[i][2][a]] for a in xrange(3)])
+            if pf > argmaxF[0]:
+                argmaxF = [pf, f]
+        assigns[i] = argmaxF[1]
+    print 'Completed choosing assignments...'
+    return assigns
 
 
 def chooseAssignmentsEMNumpy(phi):
-	print 'Choosing assignments...'
-	phiPerN = phi.transpose(2,1,0)[list(vTuples), range(3)] #(i, a, f)
-	phiProd = np.prod(phiPerN.transpose(0,2,1), axis=2) #(i, f)
-	assigns = np.argmax(phiProd, axis=1)
-	print 'Completed choosing assignments...'
-	return assigns
+    print 'Choosing assignments...'
+    phiPerN = phi.transpose(2,1,0)[list(vTuples), range(3)] #(i, a, f)
+    phiProd = np.prod(phiPerN.transpose(0,2,1), axis=2) #(i, f)
+    assigns = np.argmax(phiProd, axis=1)
+    print 'Completed choosing assignments...'
+    return assigns
 
 def emTraining():
-	print 'Starting EM training...'
-	globalStart = time.time()
+    print 'Starting EM training...'
+    globalStart = time.time()
 
-	print 'Initializing...'
-	# random initialization
-	'''
-	phi = np.zeros((frames,3,V))
-	for f in xrange(frames):
-		for a in xrange(3):
-			p = np.array([np.random.uniform(0,1) for w in xrange(V)])
-			phi[f][a] = p/sum(p)
-	'''
-
-
-	#phi = np.random.dirichlet(np.ones(V), (frames,3))
-	#print phi.shape
-
-	alpha = 0.3
-	phi = np.zeros((3,V,frames))
-	for a in xrange(3):
-		vocA = np.array(list(set(vTuples.transpose(1,0)[a])))
-		phi[a,vocA,...] = np.random.dirichlet(np.ones(len(vocA))*alpha, frames).transpose(1,0)
-	phi = phi.transpose(2,0,1)
+    print 'Initializing...'
+    # random initialization
+    '''
+    phi = np.zeros((frames,3,V))
+    for f in xrange(frames):
+        for a in xrange(3):
+            p = np.array([np.random.uniform(0,1) for w in xrange(V)])
+            phi[f][a] = p/sum(p)
+    '''
 
 
-	# uniform initialization
-	theta = np.array([float(1)/frames for f in xrange(frames)])
+    #phi = np.random.dirichlet(np.ones(V), (frames,3))
+    #print phi.shape
 
-	prevLL = float('-infinity')
-	likelihoods = []
-	for it in xrange(1,(iterations+1)):
-		print '\tIteration', str(it)
-		start = time.time()
-
-
-
-		pTable = estimatePosteriorNumpy(phi, theta)
-		#print 'p(f|w) equal:',np.array_equal(pTable, estimatePosterior(phi, theta))
+    alpha = 0.3
+    phi = np.zeros((3,V,frames))
+    for a in xrange(3):
+        vocA = np.array(list(set(vTuples.transpose(1,0)[a])))
+        phi[a,vocA,...] = np.random.dirichlet(np.ones(len(vocA))*alpha, frames).transpose(1,0)
+    phi = phi.transpose(2,0,1)
 
 
-		pTableForN = pTable[list(vTuples), range(3)] #(i, a, f)
-		#st = time.time()
-		phi = maximizePhiNumpy(pTableForN)
-		#print getDuration(st, time.time())
-		#st = time.time()
-		#phi = maximizePhiNumpy(pTable)
-		#print getDuration(st, time.time())
-		#print 'phi(w) equal:',np.array_equal(phi, maximizePhi(pTable))
-		#2/0
+    # uniform initialization
+    theta = np.array([float(1)/frames for f in xrange(frames)])
 
-		#st = time.time()
-		theta = maximizeThetaNumpy(pTableForN)
-		#print getDuration(st, time.time())
-		#st = time.time()
-		#theta = maximizeThetaNumpy(pTable)
-		#print getDuration(st, time.time())
-
-		#print 'theta(f) equal:',np.array_equal(theta, maximizeTheta(pTable))
-
-		#2/0
-
-		print '\t\tIteration completed in', getDuration(start, time.time())
-		#ll = emLikelihood(pTable, phi, theta)
-		#print '\t\tLog Likehood:', str(ll)
-		#st = time.time()
-		#ll_o = emLikelihood(pTable, phi, theta)
-		#print getDuration(st, time.time())
-		#st = time.time()
-		ll = emLikelihoodNumpy(pTableForN, phi,theta)
-		likelihoods.append(ll)
-		#print getDuration(st, time.time())
-
-		#print '\t\tLog Likehood (other):', str(ll_o)
-		print '\t\tLog Likehood:', '%.10f' % ll
+    prevLL = float('-infinity')
+    likelihoods = []
+    for it in xrange(1,(iterations+1)):
+        print '\tIteration', str(it)
+        start = time.time()
 
 
-		print '>', ll > prevLL
-		#print '=',ll == prevLL
-		prevLL = ll
-	print 'EM training completed in', getDuration(globalStart, time.time())
+
+        pTable = estimatePosteriorNumpy(phi, theta)
+        #print 'p(f|w) equal:',np.array_equal(pTable, estimatePosterior(phi, theta))
 
 
-	#'''
-	#st = time.time()
-	#assigns_o = chooseAssignmentsEM(phi)
-	#print getDuration(st, time.time())
+        pTableForN = pTable[list(vTuples), range(3)] #(i, a, f)
+        #st = time.time()
+        phi = maximizePhiNumpy(pTableForN)
+        #print getDuration(st, time.time())
+        #st = time.time()
+        #phi = maximizePhiNumpy(pTable)
+        #print getDuration(st, time.time())
+        #print 'phi(w) equal:',np.array_equal(phi, maximizePhi(pTable))
+        #2/0
 
-	#st = time.time()
-	assigns = chooseAssignmentsEMNumpy(phi)
-	#print getDuration(st, time.time())
-	#print 'assignments equal:',np.array_equal(assigns_o, assigns)
+        #st = time.time()
+        theta = maximizeThetaNumpy(pTableForN)
+        #print getDuration(st, time.time())
+        #st = time.time()
+        #theta = maximizeThetaNumpy(pTable)
+        #print getDuration(st, time.time())
 
-	return likelihoods, assigns
-	#'''
+        #print 'theta(f) equal:',np.array_equal(theta, maximizeTheta(pTable))
+
+        #2/0
+
+        print '\t\tIteration completed in', getDuration(start, time.time())
+        #ll = emLikelihood(pTable, phi, theta)
+        #print '\t\tLog Likehood:', str(ll)
+        #st = time.time()
+        #ll_o = emLikelihood(pTable, phi, theta)
+        #print getDuration(st, time.time())
+        #st = time.time()
+        ll = emLikelihoodNumpy(pTableForN, phi,theta)
+        likelihoods.append(ll)
+        #print getDuration(st, time.time())
+
+        #print '\t\tLog Likehood (other):', str(ll_o)
+        print '\t\tLog Likehood:', '%.10f' % ll
+
+
+        print '>', ll > prevLL
+        #print '=',ll == prevLL
+        prevLL = ll
+    print 'EM training completed in', getDuration(globalStart, time.time())
+
+
+    #'''
+    #st = time.time()
+    #assigns_o = chooseAssignmentsEM(phi)
+    #print getDuration(st, time.time())
+
+    #st = time.time()
+    assigns = chooseAssignmentsEMNumpy(phi)
+    #print getDuration(st, time.time())
+    #print 'assignments equal:',np.array_equal(assigns_o, assigns)
+
+    return likelihoods, assigns
+    #'''
 
 def posteriorLDA(fwCounts, fCounts, i, a):
-	fProbs = np.zeros(frames)
-	wa = vTuples[i][a]
-	for f in xrange(frames):
- 		fProbs[f] = (((beta+fwCounts[f][wa])/(V*beta+fCounts[f]))
-						* (fCounts[f]/sum(fCounts)))
-	num = sum(fProbs)
-	return [fProbs[f]/num for f in xrange(frames)]
+    fProbs = np.zeros(frames)
+    wa = vTuples[i][a]
+    for f in xrange(frames):
+         fProbs[f] = (((beta+fwCounts[f][wa])/(V*beta+fCounts[f]))
+                        * (fCounts[f]/sum(fCounts)))
+    num = sum(fProbs)
+    return [fProbs[f]/num for f in xrange(frames)]
 
 
 def posteriorLDANumpy(fwCounts, fCounts, i, a, fdCounts=[], dCounts=[], assigns=[], docIds=[]):
-	if model=='1-OConnor':
-		fProbs = (((beta+fwCounts[:, vTuples[i][a]])/(V*beta+fCounts))
-					*
-					  ((alpha+fdCounts[:, docIds[i]])
-					  	/
-					  (frames*alpha+dCounts[docIds[i]])))
-	else:
-		fProbs = (((beta+fwCounts[:, vTuples[i][a]])/(V*beta+fCounts))
-					* (fCounts/sum(fCounts)))
-	return fProbs/sum(fProbs)
+    if model=='1-OConnor':
+        fProbs = (((beta+fwCounts[:, vTuples[i][a]])/(V*beta+fCounts))
+                    *
+                      ((alpha+fdCounts[:, docIds[i]])
+                          /
+                      (frames*alpha+dCounts[docIds[i]])))
+    else:
+        fProbs = (((beta+fwCounts[:, vTuples[i][a]])/(V*beta+fCounts))
+                    * (fCounts/sum(fCounts)))
+    return fProbs/sum(fProbs)
 
 
 def chooseAssignmentsLDA(fwCounts, fCounts):
-	assigns = np.zeros(N)
-	for i in xrange(N):
-		fProbs = [posteriorLDA(fwCounts, fCounts, i, a) for a in xrange(3)]
-		fProbs = zip(*fProbs) # group by frame
-		fProbs = [np.prod(fProbs[f]) for f in xrange(frames)]
-		assigns[i] = fProbs.index(max(fProbs))
-	return assigns
+    assigns = np.zeros(N)
+    for i in xrange(N):
+        fProbs = [posteriorLDA(fwCounts, fCounts, i, a) for a in xrange(3)]
+        fProbs = zip(*fProbs) # group by frame
+        fProbs = [np.prod(fProbs[f]) for f in xrange(frames)]
+        assigns[i] = fProbs.index(max(fProbs))
+    return assigns
 
 
 def chooseAssignmentsLDANumpy(
@@ -482,8 +482,8 @@ def fwCountsThreadNumpy((assigns, globalFs)):
 
 def fwCountsThread((assigns, globalFs)):
         print "fwCountsThread started.."
-	localF = len(globalFs)
-	fwCounts = [
+    localF = len(globalFs)
+    fwCounts = [
             [
                 sum(
                     sum(
@@ -503,7 +503,7 @@ def fwCountsThread((assigns, globalFs)):
             in xrange(localF)
         ]
         print "fwCountsThread returning."
-	return fwCounts
+    return fwCounts
 
 def _hash(stuff):
     """
@@ -516,12 +516,12 @@ def _hash(stuff):
     return md5.md5(s).hexdigest()
 
 def lda(prior=False):
-	print 'Starting LDA...'
-	globalStart = time.time()
+    print 'Starting LDA...'
+    globalStart = time.time()
 
-	# 1. initialize randomly
-	print 'Initializing...'
-	assigns = np.array([
+    # 1. initialize randomly
+    print 'Initializing...'
+    assigns = np.array([
             np.array([
                 np.random.randint(frames)
                 for a
@@ -531,7 +531,7 @@ def lda(prior=False):
             in xrange(N)
         ])
 
-	#C(f,w)
+    #C(f,w)
         _d = [] # debug variable FIXME delete it
         # here I am testing both functions
         # FIXME of course this needs to be changed
@@ -554,80 +554,80 @@ def lda(prior=False):
             _d.append(fwCounts)
 
 
-	# C(f)
-	start = time.time()
-	fCounts = np.array([
+    # C(f)
+    start = time.time()
+    fCounts = np.array([
             np.sum(
                 counts*((assigns==f).transpose(1,0))
             )
             for f
             in xrange(frames)
         ])
-	print '\t* C(f) calculated in', getDuration(start, time.time()), '*'
+    print '\t* C(f) calculated in', getDuration(start, time.time()), '*'
 
 
-	if model == '1-OConnor':
-		verbs = vTuples.transpose(1,0)[1]
-		documents = np.array(list(set(verbs)))
-		D = len(documents)
+    if model == '1-OConnor':
+        verbs = vTuples.transpose(1,0)[1]
+        documents = np.array(list(set(verbs)))
+        D = len(documents)
 
-		docIds = np.array([np.array((verbs==documents[d])*d)
-					for d in xrange(D)])
-		docIds = np.sum(docIds.transpose(1,0), axis=1)
+        docIds = np.array([np.array((verbs==documents[d])*d)
+                    for d in xrange(D)])
+        docIds = np.sum(docIds.transpose(1,0), axis=1)
 
-		#C(d)
-		start = time.time()
-		dCounts = np.array([(docIds==d)*counts for d in xrange(D)])
-		dCounts = np.sum(dCounts, axis=1)
-		print '\t* C(d) calculated in', getDuration(start, time.time()), '*'
+        #C(d)
+        start = time.time()
+        dCounts = np.array([(docIds==d)*counts for d in xrange(D)])
+        dCounts = np.sum(dCounts, axis=1)
+        print '\t* C(d) calculated in', getDuration(start, time.time()), '*'
 
-		#C(k,d)
-		start = time.time()
-		fdCounts = np.array([
-						np.array([
-							np.sum(counts*np.multiply(((assigns.transpose(1,0))[1]==k)*1, (docIds==d)*1))
-							for d in xrange(D)
-						])
-						for k in xrange(frames)
-					])
-		print '\t* C(f,d) calculated in', getDuration(start, time.time()), '*'
+        #C(k,d)
+        start = time.time()
+        fdCounts = np.array([
+                        np.array([
+                            np.sum(counts*np.multiply(((assigns.transpose(1,0))[1]==k)*1, (docIds==d)*1))
+                            for d in xrange(D)
+                        ])
+                        for k in xrange(frames)
+                    ])
+        print '\t* C(f,d) calculated in', getDuration(start, time.time()), '*'
 
-	perms = list(permutations(range(3)))
-	P = len(perms)
-	# 3. repeat long enough
-	for it in xrange(1, (iterations+1)):
-		print '\tIteration', str(it)
-		start = time.time()
+    perms = list(permutations(range(3)))
+    P = len(perms)
+    # 3. repeat long enough
+    for it in xrange(1, (iterations+1)):
+        print '\tIteration', str(it)
+        start = time.time()
 
-		for i in xrange(N):
-			# 2. randomly choose a variable and draw it's new value from
-			# the respective conditional probability
-			for a in perms[np.random.randint(P)]:
-				# update counts to reflect removal of w_i^a's assignment
-				fwCounts[assigns[i][a]][vTuples[i][a]] -= counts[i]
-				fCounts[assigns[i][a]] -= counts[i]
-				if model=='1-OConnor' and a==1:
-					fdCounts[assigns[i][1]][docIds[i]] -= counts[i]
+        for i in xrange(N):
+            # 2. randomly choose a variable and draw it's new value from
+            # the respective conditional probability
+            for a in perms[np.random.randint(P)]:
+                # update counts to reflect removal of w_i^a's assignment
+                fwCounts[assigns[i][a]][vTuples[i][a]] -= counts[i]
+                fCounts[assigns[i][a]] -= counts[i]
+                if model=='1-OConnor' and a==1:
+                    fdCounts[assigns[i][1]][docIds[i]] -= counts[i]
 
-				# assign new frame to w_i^a
-				#fProbs = posteriorLDA(fwCounts, fCounts, i, a)
-				#assigns[i][a] = fProbs.index(max(fProbs))
+                # assign new frame to w_i^a
+                #fProbs = posteriorLDA(fwCounts, fCounts, i, a)
+                #assigns[i][a] = fProbs.index(max(fProbs))
 
-				fProbs = posteriorLDANumpy(fwCounts, fCounts, i, a, fdCounts, dCounts, assigns, docIds)
-				assigns[i][a] = np.nonzero(fProbs==max(fProbs))[0][0]
+                fProbs = posteriorLDANumpy(fwCounts, fCounts, i, a, fdCounts, dCounts, assigns, docIds)
+                assigns[i][a] = np.nonzero(fProbs==max(fProbs))[0][0]
 
-				# update counts to reflect assignment of the new frame
-				fwCounts[assigns[i][a]][vTuples[i][a]] += counts[i]
-				fCounts[assigns[i][a]] += counts[i]
-				if model=='1-OConnor' and a==1:
-					fdCounts[assigns[i][1]][docIds[i]] += counts[i]
+                # update counts to reflect assignment of the new frame
+                fwCounts[assigns[i][a]][vTuples[i][a]] += counts[i]
+                fCounts[assigns[i][a]] += counts[i]
+                if model=='1-OConnor' and a==1:
+                    fdCounts[assigns[i][1]][docIds[i]] += counts[i]
 
 
-		print '\t\tIteration completed in', getDuration(start, time.time())
-	print 'LDA completed in', getDuration(globalStart, time.time())
+        print '\t\tIteration completed in', getDuration(start, time.time())
+    print 'LDA completed in', getDuration(globalStart, time.time())
 
-	# 4. choose the last assignment as a sample
-	return chooseAssignmentsLDANumpy(fwCounts, fCounts, fdCounts, dCounts, assigns, docIds)
+    # 4. choose the last assignment as a sample
+    return chooseAssignmentsLDANumpy(fwCounts, fCounts, fdCounts, dCounts, assigns, docIds)
 
 
 def getDuration(start, stop):
