@@ -571,8 +571,11 @@ def lda(prior=False):
         documents = np.array(list(set(verbs)))
         D = len(documents)
 
-        docIds = np.array([np.array((verbs==documents[d])*d)
-                    for d in xrange(D)])
+        docIds = np.array([
+            np.array((verbs==documents[d])*d)
+            for d
+            in xrange(D)
+        ])
         docIds = np.sum(docIds.transpose(1,0), axis=1)
 
         #C(d)
@@ -601,7 +604,7 @@ def lda(prior=False):
                 fdCounts[k,d] = np.sum(summand)
                 #import ipdb;ipdb.set_trace()
         print '\t* C(f,d) calculated in', getDuration(start, time.time()), '*','shape=',fdCounts.shape,"frames",frames,"D",D
-        import ipdb; ipdb.set_trace()
+        #import ipdb; ipdb.set_trace()
 
     perms = list(permutations(range(3)))
     P = len(perms)
