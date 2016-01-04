@@ -481,7 +481,7 @@ def lda(prior=False):
         _d = [] # debug variable FIXME delete it
         # here I am testing both functions
         # FIXME of course this needs to be changed
-        for f in [fwCountsThread, fwCountsThreadNumpy]:
+        for f in [fwCountsThreadNumpy, fwCountsThread]:
             start = time.time()
             p = Pool(threads)
             n = int(math.ceil(frames/float(threads)))

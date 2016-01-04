@@ -1,6 +1,9 @@
+import time
+import numpy as np
+
+# local imports:
 import utils
 import triple
-import numpy as np
 A=3 # number of args (v,s,o)
 F=200
 num_epochs=2000
@@ -65,11 +68,16 @@ def em(tv):
     phi = initialize_phi(D)
     for epoch in range(num_epochs):
         print "epoch",epoch
+        before = time.time()
         mus = e_step(tv.indexes, theta, phi)
         counts = tv.counts
         theta, phi = m_step(D, tv.indexes, counts, mus)
         #print "theta",theta
-        print "loglikelihood",loglikelihood(tv.indexes, mus,theta,phi)
+        after = time.time()
+        before_ll = time.time()
+        ll = loglikelihood(tv.indexes, mus,theta,phi)
+        after_ll = time.time()
+        print "loglikelihood",ll,"E and M took %f seconds"%(after-before)," log likelihood took %f seconds"%(after_ll-before_ll)
     return mus
 
 def prepare_tomes(in_d):
