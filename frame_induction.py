@@ -583,21 +583,25 @@ def lda(prior=False):
 
         #C(k,d)
         start = time.time()
-        fdCounts = np.array([
-            np.array([
-                np.sum(
-                    counts * np.multiply(
-                        ((assigns.transpose(1,0))[1]==k)*1,
-                        (docIds==d)*1
-                    )
+        fdCounts = np.zeros((frames,D))
+        counts_np = np.array(counts)
+        dstuff = [
+            (docIds==d).astype('int') # boolean to 0/1
+            for d
+            in xrange(D)
+        ]
+        for k in xrange(frames):
+            kstuff = ((assigns.transpose(1,0))[1]==k).astype('int')
+            for d in xrange(D):
+                tmp = np.multiply(
+                    kstuff,
+                    dstuff[d]
                 )
-                for d
-                in xrange(D)
-            ])
-            for k
-            in xrange(frames)
-        ])
-        print '\t* C(f,d) calculated in', getDuration(start, time.time()), '*'
+                summand = counts_np * tmp
+                fdCounts[k,d] = np.sum(summand)
+                #import ipdb;ipdb.set_trace()
+        print '\t* C(f,d) calculated in', getDuration(start, time.time()), '*','shape=',fdCounts.shape,"frames",frames,"D",D
+        import ipdb; ipdb.set_trace()
 
     perms = list(permutations(range(3)))
     P = len(perms)
