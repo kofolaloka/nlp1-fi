@@ -406,22 +406,34 @@ def chooseAssignmentsLDA(fwCounts, fCounts):
 	return assigns
 
 
-def chooseAssignmentsLDANumpy(fwCounts, fCounts, fdCounts=[], dCounts=[], assigns=[], docIds=[]):
-	print 'Choosing assignments...'
-	if model=='1-OConnor':
-		fProbs = (((beta+fwCounts.transpose(1,0)[vTuples])/(V*beta+fCounts)).transpose(2,1,0)
-					*
-					  ((alpha+fdCounts[:, docIds])
-					  	/
-					  (frames*alpha+dCounts[docIds]))
-			     ).transpose(2,1,0)
-	else:
-		fProbs = (((beta+fwCounts.transpose(1,0)[vTuples])/(V*beta+fCounts))
-						* (fCounts/sum(fCounts))) #(i, a, f)
-	fProbs = np.prod(fProbs.transpose(0,2,1), axis=2) #(i, f)
-	assigns = np.argmax(fProbs, axis=1)
-	print 'Completed choosing assignments...'
-	return assigns
+def chooseAssignmentsLDANumpy(
+        fwCounts,
+        fCounts,
+        fdCounts=[],
+        dCounts=[],
+        assigns=[],
+        docIds=[]
+    ):
+    print 'Choosing assignments...'
+    if model=='1-OConnor':
+        numerator1 = ( beta + fwCounts.transpose(1,0)[vTuples] )
+        denominator1 = ( V * beta + fCounts )
+        term1 = ( numerator1 / denominator1 ).transpose(2,1,0)
+
+        numerator2 = ( alpha + fdCounts[:, docIds] )
+        denominator2 = ( frames * alpha + dCounts[docIds] )
+        tmp1 = numerator2 / denominator2
+        tmp2 = np.expand_dims(tmp1,1)
+        term2 = np.tile(tmp2, (1,3,1))
+        prod = term1 * term2
+        fProbs = prod.transpose(2,1,0)
+    else:
+        fProbs = (((beta+fwCounts.transpose(1,0)[vTuples])/(V*beta+fCounts))
+                                        * (fCounts/sum(fCounts))) #(i, a, f)
+    fProbs = np.prod(fProbs.transpose(0,2,1), axis=2) #(i, f)
+    assigns = np.argmax(fProbs, axis=1)
+    print 'Completed choosing assignments...'
+    return assigns
 
 
 def fwCountsThreadNumpy((assigns, globalFs)):
