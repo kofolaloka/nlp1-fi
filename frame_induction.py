@@ -42,41 +42,41 @@ def main():
     global counts
     global N
     tuples, counts = readData(args['input'])
-        global counts_np
-        print "converting the counts to numpy..."
-        counts_np = np.array(counts)
+    global counts_np
+    print "converting the counts to numpy..."
+    counts_np = np.array(counts)
     N = len(tuples)
 
     global voc
     global V
-        print "extracting the vocabulary..."
+    print "extracting the vocabulary..."
     voc = extractVocabulary()
     V = len(voc)
     global vTuples
-        print "encoding the tuples..."
+    print "encoding the tuples..."
     vTuples = encodeTuples()
 
-        global vTuples_np
-        print "converting the tuples in numpy..."
-        vTuples_np = np.array(vTuples)
+    global vTuples_np
+    print "converting the tuples in numpy..."
+    vTuples_np = np.array(vTuples)
 
-        global word_tuples_idx
-        print "extracting the word indexes in the tuples..."
-        word_tuples_idx = [
-            [
-                np.array(
-                    # below: the 0 index is because a tuple of arrays,
-                    # one for each dimension, is returned
-                    # (the dimensionality is just 1)
-                    np.where(vTuples_np[:,a] == w)[0]
-                )
-                for a
-                in xrange(3)
-            ]
-            for w # the list has one element (list of tuple indices) for each word
-            in xrange(V)
-        ] # it's a list, not a matrix because the "rows" have different length (indices of occurrences)
-        print "done."
+    global word_tuples_idx
+    print "extracting the word indexes in the tuples..."
+    word_tuples_idx = [
+        [
+            np.array(
+                # below: the 0 index is because a tuple of arrays,
+                # one for each dimension, is returned
+                # (the dimensionality is just 1)
+                np.where(vTuples_np[:,a] == w)[0]
+            )
+            for a
+            in xrange(3)
+        ]
+        for w # the list has one element (list of tuple indices) for each word
+        in xrange(V)
+    ] # it's a list, not a matrix because the "rows" have different length (indices of occurrences)
+    print "done."
     global beta
     beta = 0.001
     global alpha
@@ -85,7 +85,7 @@ def main():
     global model
     model = args['model']
     assigns = []
-        print "starting inference.. the model you chose is %s"%args['model']
+    print "starting inference.. the model you chose is %s"%args['model']
     if model=='0-Rooth':
         likelihoods, assigns = emTraining()
     if model=='0-OConnor':
@@ -137,18 +137,18 @@ def readData(dataFile):
     tuples = []
     counts = []
 
-        if os.path.splitext(dataFile)[-1] == '.gz':
-            openfunc = gzip.open
-        else:
-            openfunc = open
+    if os.path.splitext(dataFile)[-1] == '.gz':
+        openfunc = gzip.open
+    else:
+        openfunc = open
 
     with openfunc(dataFile, 'rU') as f:
         for entry in f:
             entry = entry.strip().split('\t')
-                        _t = np.array(entry[0:3])
+            _t = np.array(entry[0:3])
             tuples.append(_t)
-                        c_raw = entry[3]
-                        c = float(c_raw)
+            c_raw = entry[3]
+            c = float(c_raw)
             counts.append(c)
             #break
         print "done."
@@ -481,28 +481,28 @@ def fwCountsThreadNumpy((assigns, globalFs)):
     return fwCounts
 
 def fwCountsThread((assigns, globalFs)):
-        print "fwCountsThread started.."
+    print "fwCountsThread started.."
     localF = len(globalFs)
     fwCounts = [
-            [
+        [
+            sum(
                 sum(
-                    sum(
-                        float(counts[i])
-                        for a
-                        in xrange(3)
-                        if vTuples[i][a]==w
-                            and assigns[i][a]==globalFs[f]
-                    )
-                    for i
-                    in xrange(N)
+                    float(counts[i])
+                    for a
+                    in xrange(3)
+                    if vTuples[i][a]==w
+                        and assigns[i][a]==globalFs[f]
                 )
-                for w
-                in xrange(V)
-            ]
-            for f
-            in xrange(localF)
+                for i
+                in xrange(N)
+            )
+            for w
+            in xrange(V)
         ]
-        print "fwCountsThread returning."
+        for f
+        in xrange(localF)
+    ]
+    print "fwCountsThread returning."
     return fwCounts
 
 def _hash(stuff):
@@ -532,26 +532,26 @@ def lda(prior=False):
         ])
 
     #C(f,w)
-        _d = [] # debug variable FIXME delete it
-        # here I am testing both functions
-        # FIXME of course this needs to be changed
-        for f in [fwCountsThreadNumpy]:
-            start = time.time()
-            p = Pool(threads)
-            n = int(math.ceil(frames/float(threads)))
-            args = zip(
-                [assigns]*threads,
-                [
-                    range(frames)[i:i+n]
-                    for i
-                    in xrange(0, frames, n)
-                ]
-            )
-            fwCountsMap = p.map(f, args)
-            p.close()
-            fwCounts = np.array(list(chain.from_iterable(fwCountsMap)))
-            print '\t* C(f,w) calculated in', getDuration(start, time.time()), '*'
-            _d.append(fwCounts)
+    _d = [] # debug variable FIXME delete it
+    # here I am testing both functions
+    # FIXME of course this needs to be changed
+    for f in [fwCountsThreadNumpy]:
+        start = time.time()
+        p = Pool(threads)
+        n = int(math.ceil(frames/float(threads)))
+        args = zip(
+            [assigns]*threads,
+            [
+                range(frames)[i:i+n]
+                for i
+                in xrange(0, frames, n)
+            ]
+        )
+        fwCountsMap = p.map(f, args)
+        p.close()
+        fwCounts = np.array(list(chain.from_iterable(fwCountsMap)))
+        print '\t* C(f,w) calculated in', getDuration(start, time.time()), '*'
+        _d.append(fwCounts)
 
 
     # C(f)
@@ -584,12 +584,19 @@ def lda(prior=False):
         #C(k,d)
         start = time.time()
         fdCounts = np.array([
-                        np.array([
-                            np.sum(counts*np.multiply(((assigns.transpose(1,0))[1]==k)*1, (docIds==d)*1))
-                            for d in xrange(D)
-                        ])
-                        for k in xrange(frames)
-                    ])
+            np.array([
+                np.sum(
+                    counts * np.multiply(
+                        ((assigns.transpose(1,0))[1]==k)*1,
+                        (docIds==d)*1
+                    )
+                )
+                for d
+                in xrange(D)
+            ])
+            for k
+            in xrange(frames)
+        ])
         print '\t* C(f,d) calculated in', getDuration(start, time.time()), '*'
 
     perms = list(permutations(range(3)))
