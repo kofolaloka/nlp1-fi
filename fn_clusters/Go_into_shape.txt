@@ -1,5 +1,0 @@
-coil
-curl
-twist
-fold
-fold (protein)

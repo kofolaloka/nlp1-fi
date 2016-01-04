@@ -17,7 +17,7 @@ def extract_clusters(framenet, output):
 				root = tree_xml.getroot()
 				for child in root:
 					if child.tag == "{http://framenet.icsi.berkeley.edu}lexUnit":
-						if child.attrib['POS'] == 'V':
+						if child.attrib['POS'] == 'V' and len(child.attrib['name'].split()) == 1:
 							verb = child.attrib['name'].strip('.v')
 							output_file.write(verb + '\n')
 				output_file.close()
@@ -26,10 +26,10 @@ def clean(output_dir):
 	for f in listdir(output_dir):
 		file_path = path.join(output_dir, f)
 		f = open(file_path, 'r')
-		content = ""
+		i = 0
 		for line in f:
-			content = content + line
-		if content == '':
+			i = i + 1
+		if i < 5:
 			remove(file_path)
 		else:
 			f.close()

@@ -1,5 +1,0 @@
-turn down
-rebuff
-reject
-accept
-refuse

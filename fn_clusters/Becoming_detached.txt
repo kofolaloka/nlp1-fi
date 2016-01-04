@@ -1,4 +1,0 @@
-detach
-decouple
-unhook
-unhinge

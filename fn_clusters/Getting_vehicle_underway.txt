@@ -1,6 +1,0 @@
-launch
-weigh anchor
-cast off
-pull (out)
-lift (off)
-take (off)

@@ -1,4 +1,0 @@
-test
-flight-test
-crash-test
-flight test

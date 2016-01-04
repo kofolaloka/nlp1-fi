@@ -1,3 +1,0 @@
-count
-amount
-constitute
