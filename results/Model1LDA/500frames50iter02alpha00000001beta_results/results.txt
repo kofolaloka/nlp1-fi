@@ -1,0 +1,3 @@
+Average verbs for frame: 6.15730337079
+Average sim: 0.133881487732
+Coverage: 1.15056818182
