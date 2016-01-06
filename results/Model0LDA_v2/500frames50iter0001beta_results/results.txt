@@ -1,0 +1,4 @@
+Average sim: 0.128224378374
+Average verbs per frame(max match): 34.9452554745
+Average verbs per frame: 54.3201581028
+Coverage: 1.11688311688
