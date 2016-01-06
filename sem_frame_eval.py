@@ -22,16 +22,30 @@ def main():
     results.write('Coverage: '+ str(coverage(vocab_clusters, vocab_fn))+ '\n')
     results.close()
 
-def average_sim(output_path, results):
+def average_sim(output_path, results, clusters_dir):
 	output = open(output_path, 'r')
 	sum_sims = 0
 	lines = 0
+	sum_v = 0
 	for line in output:
 		lines = lines + 1
 		sim = float(line.split('\t')[4])
+		v = float(line.split('\t')[3])
 		sum_sims = sum_sims + sim
+		sum_v = sum_v + v
 	average = sum_sims*1.0/lines*1.0
+	average_2 = sum_v*1.0/lines*1.0
 	results.write('Average sim: '+ str(average) + '\n')
+	results.write('Average verbs per frame(max match): '+ str(average_2) + '\n')
+	verbs = []
+	for f in listdir(clusters_dir):
+		f = open(path.join(clusters_dir, f), 'r')
+		i = 0
+		for line in f:
+			i = i + 1
+		verbs.append(i)
+	av_verbs = sum(verbs)*1.0/len(verbs)
+	results.write('Average verbs per frame: '+ str(av_verbs) + '\n')
 
 def vocab(folder):
     vocab = set()
@@ -79,50 +93,50 @@ def max_match(clusters_dir, fn_dir, output_folder, results):
     sum_verbs = 0
     output_path = path.join(output_folder, 'max_match_clusters')
     output_file = open(output_path, 'w')
-    fn_wordsets = {}
-    for frame in frames:
-        frame_id = frame
-        frame_path = path.join(clusters_dir, frame)
-        frame = open(frame_path, 'r')
-        wordset = set()
-        for line in frame:
+    wordsets = {}
+    for fn_frame in fn_frames:
+        frame_fn_id = fn_frame.strip('.txt')
+        frame_fn_path = path.join(fn_dir, fn_frame)
+        frame_fn = open(frame_fn_path, 'r')
+        wordset_fn = set()
+        for line in frame_fn:
 	    verb = line.strip('\n')
-            wordset.add(verb)
-        sims = {}
-        for fn_frame in fn_frames:
-            frame_fn_id = fn_frame.strip('.txt')
-            frame_fn_path = path.join(fn_dir, fn_frame)
-            frame_fn = open(frame_fn_path, 'r')
-            wordset_fn = set()
-            for line in frame_fn:
+            wordset_fn.add(verb)
+	sims = {}
+        for frame in frames:
+	    frame_id = frame
+	    frame_path = path.join(clusters_dir, frame)
+	    frame = open(frame_path, 'r')
+	    wordset = set()
+	    for line in frame:
 		verb = line.strip('\n')
-                wordset_fn.add(verb)
-	    fn_wordsets[frame_fn_id] = wordset_fn
+		wordset.add(verb)
+	    wordsets[frame_id] = wordset
             sim = dice_similarity(wordset, wordset_fn)
-            sims[frame_fn_id] = sim
-	    frame_fn.close()
+            sims[frame_id] = sim
+	    frame.close()
 	inverse = [(value, key) for key, value in sims.items()]
 	max_match_frame = max(inverse)[1]
-	max_match_frame_wordset = fn_wordsets[max_match_frame]
+	max_match_frame_wordset = wordsets[max_match_frame]
         max_match_frame_value = max(inverse)[0]
-	overlap = wordset.intersection(max_match_frame_wordset)
+	overlap = wordset_fn.intersection(max_match_frame_wordset)
 	common = len(overlap)
-        output_file.write(frame_id + '\t'+ str(len(wordset))+ '\t' +  max_match_frame + '\t'+ str(len(max_match_frame_wordset))+ '\t'+ str(max_match_frame_value)+ '\t'+ str(common)+ '\n')
+        output_file.write(frame_fn_id + '\t'+ str(len(wordset_fn))+ '\t' +  max_match_frame + '\t'+ str(len(max_match_frame_wordset))+ '\t'+ str(max_match_frame_value)+ '\t'+ str(common)+ '\n')
 	frame.close()
 	overlap = []
-	overlap_file = frame_id + '_' + max_match_frame
+	overlap_file = frame_fn_id + '_' + max_match_frame
 	overlap_file = path.join(output_folder, overlap_file)
 	overlap_file = open(overlap_file, 'w')
-	overlap = wordset.intersection(max_match_frame_wordset)
+	overlap = wordset_fn.intersection(max_match_frame_wordset)
 	common = len(overlap)
 	for verb in overlap:
 		overlap_file.write(verb + '\n')
         overlap_file.close()
-	sum_verbs = sum_verbs + len(wordset)
-    average_verb = sum_verbs*1.0/len(frames)*1.0
-    results.write('Average verbs for frame: ' + str(average_verb)+ '\n')
+#	sum_verbs = sum_verbs + len(max_match_frame_wordset)
+ #   average_verb = sum_verbs*1.0/len(frames)*1.0
+ #   results.write('Average verbs for frame: ' + str(average_verb)+ '\n')
     output_file.close()    
-    average_sim(output_path, results)
+    average_sim(output_path, results, clusters_dir)
     order(output_folder, output_path, overlap_file)
 
 def order(output_folder, output_path, output_file):
