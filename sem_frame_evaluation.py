@@ -1,3 +1,7 @@
+'''
+Evaluation of verbs clusters using Framenet
+''''
+
 from os import listdir, path, remove, mkdir, stat
 import argparse
 
@@ -21,7 +25,7 @@ def main():
     vocab_fn = vocab(fn_dir)
     results.write('Coverage: '+ str(coverage(vocab_clusters, vocab_fn))+ '\n')
     results.close()
-
+#average similarity and verbs/frame
 def average_sim(output_path, results, clusters_dir):
 	output = open(output_path, 'r')
 	sum_sims = 0
@@ -56,17 +60,17 @@ def vocab(folder):
             verb = line.strip('\n')
             vocab.add(verb)
     return vocab
-
+#coverage of the model
 def coverage(vocab_clusters, vocab_fn):
     ratio = len(vocab_clusters)*1.0/ len(vocab_fn)*1.0
     return ratio
-
+#computation of wordsets similarity
 def dice_similarity(set1, set2):
     intersection = set1.intersection(set2)
     total = len(set1) + len(set2)
     sim = float(2 * len(intersection))/float(total)
     return sim
-
+#avoid clusters with less than 5 elements
 def filter_clusters(clusters_dir):
     for frame in listdir(clusters_dir):
         frame_id = frame
@@ -79,7 +83,7 @@ def filter_clusters(clusters_dir):
             remove(frame_path)
         else:
             frame.close()
-
+#max match for each frame
 def max_match(clusters_dir, fn_dir, output_folder, results):
     '''
     @param clusters_dir: clusters induced
@@ -138,7 +142,7 @@ def max_match(clusters_dir, fn_dir, output_folder, results):
     output_file.close()    
     average_sim(output_path, results, clusters_dir)
     order(output_folder, output_path, overlap_file)
-
+#max_match_overlap + max_match_sim output files
 def order(output_folder, output_path, output_file):
 	overlap_order = open(path.join(output_folder, 'max_match_overlap.txt'), 'w')
 	sim_order = open(path.join(output_folder, 'max_match_sim.txt'), 'w')
