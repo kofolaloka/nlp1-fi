@@ -1,0 +1,10 @@
+Final results folders are O_rooth, Model0LDA_v2, Model1LDA
+Each folder contains results for one model
+
+Folder that look like *_results contain the output of the script sem_frame_evaluation.py. The folder contains:
+
+-overlap of the two worsets that are matched 
+-max_match_clusters: file with all the matches (together with cardinalities of the sets, similarity, number of overlapping items)
+-max_match_overlap: as before but ordered by number of overlapping items
+-max_match_sim: as before but ordered by similarity
+-results.txt: file with some measurements about the output 
